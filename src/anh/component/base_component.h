@@ -65,8 +65,9 @@ public:
 
     virtual const ComponentType& component_type(void) { return type_; }
     virtual const ComponentType& interface_type(void) { return interface_; }
-    const EntityId& entity_id(void) const { return entity_id_; }
-    void set_entity_id(const EntityId& id) { entity_id_ = id; }
+
+    void set_entity(std::shared_ptr<Entity> e) { entity_ = e; }
+	std::shared_ptr<Entity> entity(void) { return entity_.lock(); }
 
 protected:
     typedef	std::function<bool(const Message)>	MessageHandler;
@@ -91,7 +92,7 @@ protected:
 
 private:
     
-    EntityId									entity_id_;
+	std::weak_ptr<Entity>						entity_;
     anh::event_dispatcher::EventDispatcher		event_dispatcher_;
     ComponentType								type_;
     ComponentType								interface_;

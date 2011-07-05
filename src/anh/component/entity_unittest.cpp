@@ -72,7 +72,7 @@ TEST_F(EntityTests, CanAttachDetachComponent)
 	std::shared_ptr<MockComponent> component(new MockComponent());
 
 	// Setup Expectations
-	EXPECT_CALL(*component, set_entity_id(entity_id_))
+	EXPECT_CALL(*component, set_entity(entity.shared_from_this()))
 		.Times(1);
 
 	EXPECT_CALL(*component, OnAttach())
@@ -120,15 +120,15 @@ TEST_F(EntityTests, CanQueryInterface)
 	std::shared_ptr<NiceMock<MockComponent>> component(new NiceMock<MockComponent>());
 
 	// Setup Expectations
-	EXPECT_CALL(*component, entity_id())
-		.WillRepeatedly(ReturnRef(entity_id_));
+	EXPECT_CALL(*component, entity())
+		.WillRepeatedly(Return(entity.shared_from_this()));
 
 	// Attach
 	entity.AttachComponent(component);
 
 	// Query Interface
 	EXPECT_EQ(ComponentType("Anh.Mock"), entity.QueryInterface<MockComponentInterface>("Mock")->component_type());
-	EXPECT_EQ(entity_id_, entity.QueryInterface<MockComponentInterface>("Mock")->entity_id());
+	EXPECT_EQ(entity.shared_from_this(), entity.QueryInterface<MockComponentInterface>("Mock")->entity());
 
 	// Detach
 	entity.DetachComponent("Mock");
@@ -142,7 +142,7 @@ TEST_F(EntityTests, CanQueryInterfaceNullReturn)
 	
 	// Query Interface
 	EXPECT_EQ(ComponentType("NullMock"), entity.QueryInterface<MockComponentInterface>("Mock")->component_type());
-	EXPECT_EQ(0, entity.QueryInterface<MockComponentInterface>("Mock")->entity_id());
+	EXPECT_EQ(nullptr, entity.QueryInterface<MockComponentInterface>("Mock")->entity());
 }
 
 /// Varifies that the Update function is called for all componeonts
