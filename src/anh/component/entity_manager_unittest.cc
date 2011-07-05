@@ -90,8 +90,10 @@ TEST_F(EntityManagerTests, AttachDetachComponent) {
 	EntityManager entity_manager;
 	auto component = std::make_shared<MockComponent>();
 
+	auto entity = std::make_shared<Entity>(entity_id_);
+
 	// Setup Expectations
-	EXPECT_CALL(*component, set_entity_id(entity_id_))
+	EXPECT_CALL(*component, set_entity(entity))
 		.Times(1);
 
 	EXPECT_CALL(*component, OnAttach())
@@ -101,7 +103,7 @@ TEST_F(EntityManagerTests, AttachDetachComponent) {
 		.Times(1);
 
 	// Add Entity.
-	entity_manager.AddEntity(std::make_shared<Entity>(entity_id_));
+	entity_manager.AddEntity(entity);
 
 	// Attach Component and varify.
 	entity_manager.AttachComponent(entity_id_, component);
@@ -164,17 +166,19 @@ TEST_F(EntityManagerTests, CanQueryInterface) {
 	EntityManager entity_manager;
 	std::shared_ptr<NiceMock<MockComponent>> component(new NiceMock<MockComponent>());
 
+	auto ent = std::make_shared<Entity>(entity_id_);
+
 	// Setup Expectations
-	EXPECT_CALL(*component, entity_id())
-		.WillRepeatedly(ReturnRef(entity_id_));
+	EXPECT_CALL(*component, entity())
+		.WillRepeatedly(Return(ent));
 
 	// Add Entity and Attach.
-	entity_manager.AddEntity(std::make_shared<Entity>(entity_id_));
+	entity_manager.AddEntity(ent);
 	entity_manager.AttachComponent(entity_id_, component);
 
 	// Query Interface
 	EXPECT_EQ(ComponentType("Anh.Mock"), entity_manager.QueryInterface<MockComponentInterface>(entity_id_, "Mock")->component_type());
-	EXPECT_EQ(entity_id_, entity_manager.QueryInterface<MockComponentInterface>(entity_id_, "Mock")->entity_id());
+	EXPECT_EQ(ent, entity_manager.QueryInterface<MockComponentInterface>(entity_id_, "Mock")->entity());
 
 	// Detach and Remove Entity
 	entity_manager.DetachComponent(entity_id_, "Mock");
@@ -190,7 +194,7 @@ TEST_F(EntityManagerTests, QueryInterfaceNullComponentReturn) {
 
 	// Query Interface
 	EXPECT_EQ(ComponentType("NullMock"), entity_manager.QueryInterface<MockComponentInterface>(entity_id_, "Mock")->component_type());
-	EXPECT_EQ(0, entity_manager.QueryInterface<MockComponentInterface>(entity_id_, "Mock")->entity_id());
+	EXPECT_EQ(nullptr, entity_manager.QueryInterface<MockComponentInterface>(entity_id_, "Mock")->entity());
 
 }
 

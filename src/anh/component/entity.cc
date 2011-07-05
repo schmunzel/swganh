@@ -41,7 +41,7 @@ void Entity::AttachComponent(std::shared_ptr<ComponentInterface> component)
 	ComponentsMapIterator i = components_.find(component->interface_type());
 	if(i == components_.end()) {
 		components_.insert(ComponentsMap::value_type(component->interface_type(), component));
-		component->set_entity_id(id_);
+		component->set_entity(shared_from_this());
 		component->OnAttach();
 	}
 }

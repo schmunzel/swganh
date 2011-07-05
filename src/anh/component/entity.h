@@ -112,6 +112,9 @@ public:
 	void add_update(anh::HashString hs, std::uint16_t id);
 	void clear_updates();
 	void swap_updates(swganh::baseline::Updatables& other);
+	std::shared_ptr<Entity>			parent() { return parent_.lock(); }
+	void							parent_intrl_(std::shared_ptr<Entity> p) { parent_ = p; }
+
 
 private:
 	typedef std::map<InterfaceType, std::shared_ptr<ComponentInterface>>			ComponentsMap;
@@ -121,6 +124,8 @@ private:
 	EntityId							id_;
 	TagSet								tags_;
 	ComponentsMap						components_;
+
+	std::weak_ptr<Entity>				parent_;
 
 	swganh::baseline::Updatables		updates_;
 };

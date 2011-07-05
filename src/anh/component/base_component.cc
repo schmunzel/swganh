@@ -24,8 +24,7 @@ namespace anh {
 namespace component {
 
 BaseComponent::BaseComponent(const ComponentType& interface, const ComponentType& type)
-    : entity_id_(0)
-    , type_(type)
+    : type_(type)
     , interface_(interface)
     , dirty_(false)
 {
