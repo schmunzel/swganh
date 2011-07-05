@@ -40,8 +40,7 @@ class NullMockComponent : public MockComponentInterface {
 public:
     NullMockComponent() 
     : type_("NullMock")
-    , interface_("Mock")
-    , entity_id_(0) { }
+    , interface_("Mock") { }
 
     virtual ~NullMockComponent() { }
 
@@ -50,8 +49,8 @@ public:
     void OnDetach() { }
     void Update(const float deltaMilliseconds) { }
     void HandleMessage(const Message message) { }
-    const EntityId& entity_id() const { return entity_id_; }
-    void set_entity_id(const EntityId& id) { }
+    std::shared_ptr<Entity> entity(void) { return entity_.lock(); }
+    void set_entity(std::shared_ptr<Entity> e) { }
     void set_dirty(bool dirty) { dirty_ = dirty; }
     bool dirty() { return dirty_; }
     std::shared_ptr<anh::component::AttributeMapperInterface<ComponentInterface>> attribute_mapper() { return attribute_mapper_; }
@@ -61,7 +60,7 @@ public:
 
     ComponentType type_;
     InterfaceType interface_;
-    EntityId entity_id_;
+    std::weak_ptr<Entity> entity_;
     std::shared_ptr<anh::component::AttributeMapperInterface<ComponentInterface>> attribute_mapper_;
     bool dirty_;
 };
@@ -79,8 +78,8 @@ public:
     MOCK_METHOD0(OnDetach, void ());
     MOCK_METHOD1(Update, void (const float deltaMilliseconds));
     MOCK_METHOD1(HandleMessage, void (const Message message));
-    MOCK_CONST_METHOD0(entity_id, const EntityId& ());
-    MOCK_METHOD1(set_entity_id, void (const EntityId& id));
+    MOCK_METHOD0(entity, std::shared_ptr<Entity> ());
+    MOCK_METHOD1(set_entity, void (std::shared_ptr<Entity> e));
     MOCK_METHOD1(set_dirty, void(bool dirty));
     MOCK_METHOD0(dirty, bool());
     MOCK_METHOD0(attribute_mapper, std::shared_ptr<anh::component::AttributeMapperInterface<ComponentInterface>>());

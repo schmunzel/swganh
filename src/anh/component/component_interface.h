@@ -97,17 +97,18 @@ public:
      */
     virtual const InterfaceType& interface_type(void) = 0;
 
-    /**
-     * @returns The Object Id of the entity that owns this component.
-     */
-    virtual const EntityId& entity_id(void) const = 0;
+	/**
+	 * @returns A shared_ptr to the entity that owns this component.
+	 */
+	virtual std::shared_ptr<Entity> entity(void) = 0;
 
-    /**
-     * @brief Sets the id of the entity that owns this component.
-     * 
-     * Use with Caution! Only "the wise ones" are allowed to use this function.
-     */
-    virtual void set_entity_id(const EntityId& id) = 0;
+	/**
+	 * @brief sets the entity that owns this component
+	 *
+	 * @param e
+	 */
+	virtual void set_entity(std::shared_ptr<Entity> e) = 0;
+
     /**
     * @brief sets the dirty flag of the component to signal the db update
     *
