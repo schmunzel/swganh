@@ -40,15 +40,20 @@ void TransformDBMapper::Persist(std::shared_ptr<TransformComponentInterface> com
     {
         auto conn = db_manager_->getConnection("galaxy");
         sql::SQLString query_string
-            ("update transform set x = ?, y = ?, z = ?, rW = ?, rX = ?, rY = ?, rZ = ?, parent_id = ?");
+            ("update transform set x = ?, y = ?, z = ?, rW = ?, rX = ?, rY = ?, rZ = ?");
         auto prepared = 
             unique_ptr<sql::PreparedStatement>(conn->prepareStatement(query_string));
         // set the values in place of ?
-        prepared->setDouble(0, component->position().x); prepared->setDouble(1, component->position().y);
-        prepared->setDouble(2, component->position().z); prepared->setDouble(3, component->rotation().w);
-        prepared->setDouble(4, component->rotation().x); prepared->setDouble(5, component->rotation().y);
-        prepared->setDouble(6, component->rotation().z); prepared->setInt64(7, component->parent_id());
-        prepared->executeQuery();
+        prepared->setDouble(0, component->position().x);
+		prepared->setDouble(1, component->position().y);
+        prepared->setDouble(2, component->position().z); 
+		
+		prepared->setDouble(3, component->rotation().w);
+        prepared->setDouble(4, component->rotation().x); 
+		prepared->setDouble(5, component->rotation().y);
+        prepared->setDouble(6, component->rotation().z);
+        
+		prepared->executeQuery();
     }
 }
 void TransformDBMapper::Populate(std::shared_ptr<anh::api::components::TransformComponentInterface> component)

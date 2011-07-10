@@ -40,8 +40,8 @@ namespace anh_python { namespace components {
 void define_class_transform_component() {
     
     // overloads
-    const EntityId      (TransformComponent::*get_parent_id)(void)              = &TransformComponent::parent_id; 
-    void                (TransformComponent::*set_parent_id)(const EntityId)    = &TransformComponent::parent_id;
+   // const EntityId      (TransformComponent::*get_parent_id)(void)              = &TransformComponent::parent_id; 
+    //void                (TransformComponent::*set_parent_id)(const EntityId)    = &TransformComponent::parent_id;
     const glm::vec3&    (TransformComponent::*get_pos)(void)                    = &TransformComponent::position;
     void                (TransformComponent::*set_pos)(const glm::vec3&)        = &TransformComponent::position;
     void (TransformComponent::*set_pos3)(const float, const float, const float) = &TransformComponent::position;
@@ -60,8 +60,8 @@ void define_class_transform_component() {
         init<>())
         .def(init< const glm::vec3&, const glm::quat&, const float >())
         //.def("object_id", &TransformComponent::entity_id, return_value_policy<copy_const_reference>())
-        .def("parent_id", get_parent_id)
-        .def("parent_id", set_parent_id)
+        //.def("parent_id", get_parent_id)
+        //.def("parent_id", set_parent_id)
         .def("position", get_pos, return_internal_reference<>(),
         "Gets a L{glm::vec3} of the current position, @returns internal reference.")
         .def("position", set_pos)

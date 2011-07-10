@@ -3,7 +3,7 @@
 
 #include <boost/thread/locks.hpp>
 
-using namespace spatial_index::container;
+using namespace container_system;
 using namespace anh::api;
 using namespace anh::api::components;
 using namespace anh::component;
@@ -22,15 +22,21 @@ bool sorted_container_component::has_entity(std::shared_ptr<Entity> who, std::sh
 	return false;
 }
 
+std::set<std::shared_ptr<anh::component::Entity>> sorted_container_component::aware_entities(std::shared_ptr<anh::component::Entity> caller_hint)
+{
+	boost::shared_lock<boost::shared_mutex> lock(intrl_lock_);
+	return aware_entities_;
+}
+
 bool sorted_container_component::contained_objects(std::shared_ptr<anh::component::Entity> who, std::function<void(std::shared_ptr<anh::component::Entity>, std::shared_ptr<anh::component::Entity>)> funct, size_t max_depth, bool top_down)
 {
 	boost::shared_lock<boost::shared_mutex> lock(intrl_lock_);
 	if(permissions_->can_view(who))
 	{
 		auto end = contained_objects_.end();
-		for(auto itr = contained_objects_.begin(); itr != end; ++itr)
+		if(top_down)
 		{
-			if(top_down)
+			for(auto itr = contained_objects_.begin(); itr != end; ++itr)
 			{
 				funct(who, *itr);
 				if(max_depth != 1)
@@ -38,7 +44,10 @@ bool sorted_container_component::contained_objects(std::shared_ptr<anh::componen
 					(*itr)->QueryInterface<ContainerComponentInterface>("Container")->contained_objects(who, funct, (max_depth != 0) ? max_depth-1 : 0);
 				}
 			}
-			else
+		}
+		else
+		{
+			for(auto itr = contained_objects_.begin(); itr != end; ++itr)
 			{
 				if(max_depth != 1)
 				{
@@ -87,7 +96,7 @@ bool sorted_container_component::capacity(size_t new_capacity)
 bool sorted_container_component::insert(std::shared_ptr<Entity> who, std::shared_ptr<Entity> what, bool force_insertion)
 {
 	boost::upgrade_lock<boost::shared_mutex> lock(intrl_lock_);
-	if(permissions_->can_insert(who, what) || force_insertion)
+	if(force_insertion || permissions_->can_insert(who, what))
 	{
 		{  //Scope to allow the unique lock to fall out of scope
 			boost::upgrade_to_unique_lock<boost::shared_mutex> uniqueLock(lock);
@@ -107,7 +116,7 @@ bool sorted_container_component::insert(std::shared_ptr<Entity> who, std::shared
 bool sorted_container_component::remove(std::shared_ptr<Entity> who, std::shared_ptr<Entity> what, bool force_removal)
 {
 	boost::upgrade_lock<boost::shared_mutex> lock(intrl_lock_);
-	if(permissions_->can_remove(who, what) || force_removal)
+	if( force_removal || permissions_->can_remove(who, what))
 	{
 		bool should_update = false;
 		{ //Scope to allow the unique lock to fall out of scope
@@ -140,9 +149,9 @@ bool sorted_container_component::remove(std::shared_ptr<Entity> who, std::shared
 bool sorted_container_component::transfer_to(std::shared_ptr<Entity> who, std::shared_ptr<Entity> what, std::shared_ptr<ContainerComponentInterface> recv_container, bool force_insertion, bool force_removal)
 {
 	boost::upgrade_lock<boost::shared_mutex> lock(intrl_lock_);
-	if(recv_container->permissions()->can_insert(who, what) || force_insertion)
+	if(force_removal || permissions_->can_remove(who, what))
 	{
-		if(permissions_->can_remove(who, what) || force_removal)
+		if(force_insertion || recv_container->permissions_can_insert(who, what))
 		{
 			std::set<std::shared_ptr<Entity>> all_awares;
 
@@ -179,7 +188,7 @@ bool sorted_container_component::transfer_to(std::shared_ptr<Entity> who, std::s
 
 			boost::upgrade_to_unique_lock<boost::shared_mutex> uniqueLock(lock);
 
-			recv_container->intrl_insert_(what);
+			recv_container->intrl_insert_(what, shared_from_this());
 			contained_objects_.erase(what);
 			permissions_->removed(what);
 
@@ -235,4 +244,207 @@ void sorted_container_component::make_unaware(std::shared_ptr<anh::component::En
 		boost::upgrade_to_unique_lock<boost::shared_mutex> uniqueLock(lock);
 		aware_entities_.erase(what);
 	}
+}
+
+bool sorted_container_component::intrl_insert_(std::shared_ptr<anh::component::Entity> what, std::shared_ptr<ContainerComponentInterface> old_container)
+{
+	boost::unique_lock<boost::shared_mutex> lock(intrl_lock_);
+	contained_objects_.insert(what);
+	return true;
+}
+
+bool sorted_container_component::permissions_grant_view(std::shared_ptr<Entity> who)
+{
+	boost::shared_lock<boost::shared_mutex> lock(intrl_lock_);
+	if(permissions_->accepts_changes())
+	{
+		std::set<std::shared_ptr<Entity>> delta_set = permissions_->permissions_grant_view(who, aware_entities_);
+		std::for_each(delta_set.begin(), delta_set.end(), [&] (std::shared_ptr<Entity> e) {
+			//Send UpdateCellPermissionMessage with flag = 1
+		
+		});
+		return true;
+	}
+	return false;
+}
+
+bool sorted_container_component::permissions_revoke_view(std::shared_ptr<Entity> who)
+{
+	boost::shared_lock<boost::shared_mutex> lock(intrl_lock_);
+	if(permissions_->accepts_changes())
+	{
+		std::set<std::shared_ptr<Entity>> delta_set = permissions_->permissions_revoke_view(who, aware_entities_);
+		std::for_each(delta_set.begin(), delta_set.end(), [&] (std::shared_ptr<Entity> e) {
+			//Send UpdateCellPermissionMessage with flag = 0
+		
+		});
+		return true;
+	}
+	return false;
+}
+
+bool sorted_container_component::permissions_grant_insert(std::shared_ptr<Entity> who)
+{
+	boost::shared_lock<boost::shared_mutex> lock(intrl_lock_);
+	if(permissions_->accepts_changes())
+	{
+		std::set<std::shared_ptr<Entity>> delta_set = permissions_->permissions_grant_insert(who, aware_entities_);
+		std::for_each(delta_set.begin(), delta_set.end(), [&] (std::shared_ptr<Entity> e) {
+			//Send UpdateCellPermissionMessage with flag = 1
+		
+		});
+		return true;
+	}
+	return false;
+}
+
+bool sorted_container_component::permissions_revoke_insert(std::shared_ptr<Entity> who)
+{
+	boost::shared_lock<boost::shared_mutex> lock(intrl_lock_);
+	if(permissions_->accepts_changes())
+	{
+		std::set<std::shared_ptr<Entity>> delta_set = permissions_->permissions_revoke_insert(who, aware_entities_);
+		std::for_each(delta_set.begin(), delta_set.end(), [&] (std::shared_ptr<Entity> e) {
+			//Send UpdateCellPermissionMessage with flag = 0
+		
+		});
+		return true;
+	}
+	return false;
+}
+
+bool sorted_container_component::permissions_grant_removal(std::shared_ptr<Entity> who)
+{
+	boost::shared_lock<boost::shared_mutex> lock(intrl_lock_);
+	if(permissions_->accepts_changes())
+	{
+		std::set<std::shared_ptr<Entity>> delta_set = permissions_->permissions_grant_removal(who, aware_entities_);
+		std::for_each(delta_set.begin(), delta_set.end(), [&] (std::shared_ptr<Entity> e) {
+			//Send UpdateCellPermissionMessage with flag = 1
+		
+		});
+		return true;
+	}
+	return false;
+}
+
+bool sorted_container_component::permissions_revoke_removal(std::shared_ptr<Entity> who)
+{
+	boost::shared_lock<boost::shared_mutex> lock(intrl_lock_);
+	if(permissions_->accepts_changes())
+	{
+		std::set<std::shared_ptr<Entity>> delta_set = permissions_->permissions_revoke_removal(who, aware_entities_);
+		std::for_each(delta_set.begin(), delta_set.end(), [&] (std::shared_ptr<Entity> e) {
+			//Send UpdateCellPermissionMessage with flag = 0
+		});
+		return true;
+	}
+	return false;
+}
+
+bool sorted_container_component::permissions_grant_view(std::string argument)
+{
+	boost::shared_lock<boost::shared_mutex> lock(intrl_lock_);
+	if(permissions_->accepts_changes())
+	{
+		std::set<std::shared_ptr<Entity>> delta_set = permissions_->permissions_grant_view(argument, aware_entities_);
+		std::for_each(delta_set.begin(), delta_set.end(), [&] (std::shared_ptr<Entity> e) {
+			//Send UpdateCellPermissionMessage with flag = 1
+		
+		});
+		return true;
+	}
+	return false;
+}
+
+bool sorted_container_component::permissions_revoke_view(std::string argument)
+{
+	boost::shared_lock<boost::shared_mutex> lock(intrl_lock_);
+	if(permissions_->accepts_changes())
+	{
+		std::set<std::shared_ptr<Entity>> delta_set = permissions_->permissions_revoke_view(argument, aware_entities_);
+		std::for_each(delta_set.begin(), delta_set.end(), [&] (std::shared_ptr<Entity> e) {
+			//Send UpdateCellPermissionMessage with flag = 0
+		
+		});
+		return true;
+	}
+	return false;
+}
+
+bool sorted_container_component::permissions_grant_insert(std::string argument)
+{
+	boost::shared_lock<boost::shared_mutex> lock(intrl_lock_);
+	if(permissions_->accepts_changes())
+	{
+		std::set<std::shared_ptr<Entity>> delta_set = permissions_->permissions_grant_insert(argument, aware_entities_);
+		std::for_each(delta_set.begin(), delta_set.end(), [&] (std::shared_ptr<Entity> e) {
+			//Send UpdateCellPermissionMessage with flag = 1
+		
+		});
+		return true;
+	}
+	return false;
+}
+
+bool sorted_container_component::permissions_revoke_insert(std::string argument)
+{
+	boost::shared_lock<boost::shared_mutex> lock(intrl_lock_);
+	if(permissions_->accepts_changes())
+	{
+		std::set<std::shared_ptr<Entity>> delta_set = permissions_->permissions_revoke_insert(argument, aware_entities_);
+		std::for_each(delta_set.begin(), delta_set.end(), [&] (std::shared_ptr<Entity> e) {
+			//Send UpdateCellPermissionMessage with flag = 0
+		
+		});
+		return true;
+	}
+	return false;
+}
+
+bool sorted_container_component::permissions_grant_removal(std::string argument)
+{
+	boost::shared_lock<boost::shared_mutex> lock(intrl_lock_);
+	if(permissions_->accepts_changes())
+	{
+		std::set<std::shared_ptr<Entity>> delta_set = permissions_->permissions_grant_removal(argument, aware_entities_);
+		std::for_each(delta_set.begin(), delta_set.end(), [&] (std::shared_ptr<Entity> e) {
+			//Send UpdateCellPermissionMessage with flag = 1
+		
+		});
+		return true;
+	}
+	return false;
+}
+
+bool sorted_container_component::permissions_revoke_removal(std::string argument)
+{
+	boost::shared_lock<boost::shared_mutex> lock(intrl_lock_);
+	if(permissions_->accepts_changes())
+	{
+		std::set<std::shared_ptr<Entity>> delta_set = permissions_->permissions_revoke_removal(argument, aware_entities_);
+		std::for_each(delta_set.begin(), delta_set.end(), [&] (std::shared_ptr<Entity> e) {
+			//Send UpdateCellPermissionMessage with flag = 0
+		});
+		return true;
+	}
+	return false;
+}
+
+bool sorted_container_component::permissions_can_view(std::shared_ptr<anh::component::Entity> who)
+{
+	boost::shared_lock<boost::shared_mutex> lock(intrl_lock_);
+	return permissions_->can_view(who);
+}
+
+bool sorted_container_component::permissions_can_insert(std::shared_ptr<anh::component::Entity> who, std::shared_ptr<anh::component::Entity> what)
+{
+	boost::shared_lock<boost::shared_mutex> lock(intrl_lock_);
+	return permissions_->can_insert(who, what);
+}
+
+bool sorted_container_component::permissions_can_remove(std::shared_ptr<anh::component::Entity> who, std::shared_ptr<anh::component::Entity> what)
+{
+	boost::shared_lock<boost::shared_mutex> lock(intrl_lock_);
+	return permissions_->can_remove(who, what);
 }

@@ -18,6 +18,7 @@
 */
 
 #include <anh/component/base_component.h>
+#include <anh/component/entity.h>
 #include <glog/logging.h>
 
 namespace anh {
@@ -49,6 +50,16 @@ bool BaseComponent::RegisterMessageHandler(const MessageType& type, MessageHandl
         return false;
     }
     return true;
+}
+
+void BaseComponent::set_entity(std::shared_ptr<anh::component::Entity> e) 
+{ 
+	entity_ = e; 
+}
+
+std::shared_ptr<anh::component::Entity> BaseComponent::entity(void) 
+{ 
+	return entity_.lock();
 }
 
 void BaseComponent::UnregisterMessageHandler(const MessageType& type)

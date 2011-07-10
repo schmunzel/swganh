@@ -29,6 +29,8 @@
 
 namespace anh {
 namespace component {
+	
+	class Entity;
 
 /**
  * \brief A basic entity component.
@@ -66,8 +68,8 @@ public:
     virtual const ComponentType& component_type(void) { return type_; }
     virtual const ComponentType& interface_type(void) { return interface_; }
 
-    void set_entity(std::shared_ptr<Entity> e) { entity_ = e; }
-	std::shared_ptr<Entity> entity(void) { return entity_.lock(); }
+    void set_entity(std::shared_ptr<anh::component::Entity> e);
+	std::shared_ptr<anh::component::Entity> entity(void);
 
 protected:
     typedef	std::function<bool(const Message)>	MessageHandler;
@@ -92,7 +94,7 @@ protected:
 
 private:
     
-	std::weak_ptr<Entity>						entity_;
+	std::weak_ptr<anh::component::Entity>						entity_;
     anh::event_dispatcher::EventDispatcher		event_dispatcher_;
     ComponentType								type_;
     ComponentType								interface_;

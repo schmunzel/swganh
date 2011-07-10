@@ -1,6 +1,8 @@
 include(ANHLibrary)
 
 AddANHLibrary(container_system
+    DEPENDS 
+		libanh  
 	ADDITIONAL_INCLUDE_DIRS
 	    ${Boost_INCLUDE_DIR}
 		${GLOG_INCLUDE_DIR}
@@ -15,7 +17,6 @@ AddANHLibrary(container_system
         ${Boost_THREAD_LIBRARY_DEBUG}
 		${GLOG_LIBRARY_DEBUG}
 	OPTIMIZED_LIBRARIES 
-
 	    ${TBB_LIBRARIES}
         ${Boost_THREAD_LIBRARY_RELEASE}
 		${GLOG_LIBRARY_RELEASE}
