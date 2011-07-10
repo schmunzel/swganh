@@ -75,8 +75,9 @@ bool universe_container_component::insert(std::shared_ptr<anh::component::Entity
 		//For Every Object in the Bucket
 		std::for_each((*itr)->contained_objects_.begin(), (*itr)->contained_objects_.end(), [&] (std::shared_ptr<Entity> e) {
 			//Send Baseline
+
 			//call make_aware on the object
-			e->QueryInterface<ContainerComponentInterface>("Container")->make_aware(who);
+			e->QueryInterface<ContainerComponentInterface>("Container")->make_aware(what);
 		}); //End For
 	} //End For
 
@@ -93,7 +94,7 @@ bool universe_container_component::insert(std::shared_ptr<anh::component::Entity
 	return true;
 }
 
-bool universe_container_component::intrl_insert_(std::shared_ptr<anh::component::Entity> what)
+bool universe_container_component::intrl_insert_(std::shared_ptr<anh::component::Entity> what, std::shared_ptr<ContainerComponentInterface> old_container)
 {
 	//Get the Transform Component
 	auto transform = what->QueryInterface<anh::api::components::TransformComponentInterface>("Transform");
@@ -159,7 +160,7 @@ bool universe_container_component::remove(std::shared_ptr<anh::component::Entity
 bool universe_container_component::transfer_to(std::shared_ptr<anh::component::Entity> who, std::shared_ptr<anh::component::Entity> what, std::shared_ptr<ContainerComponentInterface> recv_container, bool force_insertion, bool force_removal)
 {
 	//If permissions will let this happen
-	if(recv_container->permissions()->can_insert(who, what) || force_insertion)
+	if(recv_container->permissions_can_insert(who, what) || force_insertion)
 	{
 		//Get the Transform Component
 		auto transform_what = what->QueryInterface<anh::api::components::TransformComponentInterface>("Transform");
@@ -187,7 +188,7 @@ bool universe_container_component::transfer_to(std::shared_ptr<anh::component::E
 
 			//intrl_insert_ is an internal insertion which only fails if the container we're transfering to
 			//is not actually a container, and cannot contain anything.
-			if(!recv_container->intrl_insert_(what))
+			if(!recv_container->intrl_insert_(what, shared_from_this()))
 			{
 				itr = old_parent->relevant_buckets_.begin();
 				for(; itr != end; ++itr)
@@ -236,7 +237,7 @@ bool universe_container_component::transfer_to(std::shared_ptr<anh::component::E
 			} //End For
 
 			//Switch Parents
-			recv_container->intrl_insert_(what);
+			recv_container->intrl_insert_(what, shared_from_this());
 			old_parent->contained_objects_.erase(what);
 
 			//For Every Bucket in the set
@@ -542,18 +543,6 @@ size_t universe_container_component::relevant_bucket_3D_(const glm::vec3& pos)
 	size_t z = (pos.z + half_map_width_) / buckets_per_row_;
 
 	return x + y * buckets_per_row_ * buckets_per_row_ + z * buckets_per_row_;
-}
-
-std::shared_ptr<ContainerPermissionsInterface> universe_container_component::permissions()
-{
-	//Not relevant for the universe container!
-	return nullptr;
-}
-
-bool universe_container_component::permissions(std::shared_ptr<ContainerPermissionsInterface> new_permissions)
-{
-	//Not relevant for the universe container!
-	return false;
 }
 
 bool universe_container_component::empty()

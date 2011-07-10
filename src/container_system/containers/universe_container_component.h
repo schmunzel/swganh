@@ -21,7 +21,9 @@ namespace component
 
 namespace container_system
 {
-	class universe_container_component : public anh::api::components::ContainerComponentInterface
+	class region_interface;
+
+	class universe_container_component : public anh::api::components::ContainerComponentInterface, public std::enable_shared_from_this<universe_container_component>
 	{
 	public:
 
@@ -46,6 +48,10 @@ namespace container_system
 
 		universe_container_component(float map_size, float bucket_size, float viewing_range, bool _3_dimensional_);
 
+		//Region Methods
+		void insert(std::shared_ptr<region_interface> region);
+		void remove(std::shared_ptr<region_interface> region);
+
 		//View Methods
 		virtual bool has_entity(std::shared_ptr<anh::component::Entity> who, std::shared_ptr<anh::component::Entity> what);
 		virtual bool contained_objects(std::shared_ptr<anh::component::Entity> who, std::function<void(std::shared_ptr<anh::component::Entity>, std::shared_ptr<anh::component::Entity>)> funct, size_t max_depth=0);
@@ -63,8 +69,23 @@ namespace container_system
 		virtual void make_unaware(std::shared_ptr<anh::component::Entity> what);
 
 		//Permission Methods
-		virtual std::shared_ptr<anh::api::ContainerPermissionsInterface> permissions();
-		virtual bool permissions(std::shared_ptr<anh::api::ContainerPermissionsInterface> new_permissions);
+		virtual bool permissions_can_view(std::shared_ptr<anh::component::Entity> who) { return true; }
+		virtual bool permissions_can_insert(std::shared_ptr<anh::component::Entity> who, std::shared_ptr<anh::component::Entity> what) { return true; }
+		virtual bool permissions_can_remove(std::shared_ptr<anh::component::Entity> who, std::shared_ptr<anh::component::Entity> what) { return true; }
+
+		virtual bool permissions_grant_view(std::shared_ptr<anh::component::Entity> who) { return false; }
+		virtual bool permissions_revoke_view(std::shared_ptr<anh::component::Entity> who) { return false; }
+		virtual bool permissions_grant_insert(std::shared_ptr<anh::component::Entity> who) { return false; }
+		virtual bool permissions_revoke_insert(std::shared_ptr<anh::component::Entity> who) { return false; }
+		virtual bool permissions_grant_removal(std::shared_ptr<anh::component::Entity> who) { return false; }
+		virtual bool permissions_revoke_removal(std::shared_ptr<anh::component::Entity> who) { return false; }
+
+		virtual bool permissions_grant_view(std::string argument) { return false; }
+		virtual bool permissions_revoke_view(std::string argument) { return false; }
+		virtual bool permissions_grant_insert(std::string argument) { return false; }
+		virtual bool permissions_revoke_insert(std::string argument) { return false; }
+		virtual bool permissions_grant_removal(std::string argument) { return false; }
+		virtual bool permissions_revoke_removal(std::string argument) { return false; }
 
 		//Size/Capacity Methods
 		virtual bool empty();
@@ -74,7 +95,7 @@ namespace container_system
 		virtual size_t capacity();
 		virtual bool capacity(size_t new_capacity);
 	
-		virtual bool intrl_insert_(std::shared_ptr<anh::component::Entity> what);
+		virtual bool intrl_insert_(std::shared_ptr<anh::component::Entity> what, std::shared_ptr<ContainerComponentInterface> old_container);
 
 	private:
 		
