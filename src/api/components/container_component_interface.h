@@ -27,9 +27,10 @@ public:
 	virtual std::shared_ptr<anh::component::Entity> entity_in_slot(std::shared_ptr<anh::component::Entity> who,std::string slot_name) = 0;
 
 	//Modification Methods
-	virtual bool insert(std::shared_ptr<anh::component::Entity> who, std::shared_ptr<anh::component::Entity> what, bool force_insertion=false) = 0;
-	virtual bool remove(std::shared_ptr<anh::component::Entity> who, std::shared_ptr<anh::component::Entity> what, bool force_removal=false) = 0;
-	virtual bool transfer_to(std::shared_ptr<anh::component::Entity> who, std::shared_ptr<anh::component::Entity> what, std::shared_ptr<ContainerComponentInterface> recv_container, bool force_insertion=false, bool force_removal=false) = 0;
+	virtual bool insert(std::shared_ptr<anh::component::Entity> who, std::shared_ptr<anh::component::Entity> what, bool force_insertion) = 0;
+	virtual bool insert(std::shared_ptr<anh::component::Entity> who, std::shared_ptr<anh::component::Entity> what, unsigned int id, bool force_insertion) = 0;
+	virtual bool remove(std::shared_ptr<anh::component::Entity> who, std::shared_ptr<anh::component::Entity> what, bool force_removal) = 0;
+	virtual bool transfer_to(std::shared_ptr<anh::component::Entity> who, std::shared_ptr<anh::component::Entity> what, std::shared_ptr<ContainerComponentInterface> recv_container, bool force_insertion, bool force_removal) = 0;
 
 	//Awareness Methods
 	virtual void make_aware(std::shared_ptr<anh::component::Entity> what) = 0;
@@ -38,8 +39,24 @@ public:
 	virtual std::set<std::shared_ptr<anh::component::Entity>> aware_entities(std::shared_ptr<anh::component::Entity> caller_hint) = 0;
 
 	//Permission Methods
-	virtual std::shared_ptr<ContainerPermissionsInterface> permissions() = 0;
-	virtual bool permissions(std::shared_ptr<ContainerPermissionsInterface> new_permissions) = 0;
+	virtual bool permissions_can_view(std::shared_ptr<anh::component::Entity> who) = 0;
+	virtual bool permissions_can_insert(std::shared_ptr<anh::component::Entity> who, std::shared_ptr<anh::component::Entity> what) = 0;
+	virtual bool permissions_can_insert(std::shared_ptr<anh::component::Entity> who, std::shared_ptr<anh::component::Entity> what, const std::set<anh::HashString>& arrangement_to_use) = 0;
+	virtual bool permissions_can_remove(std::shared_ptr<anh::component::Entity> who, std::shared_ptr<anh::component::Entity> what) = 0;
+
+	virtual bool permissions_grant_view(std::shared_ptr<anh::component::Entity> who) = 0;
+	virtual bool permissions_revoke_view(std::shared_ptr<anh::component::Entity> who) = 0;
+	virtual bool permissions_grant_insert(std::shared_ptr<anh::component::Entity> who) = 0;
+	virtual bool permissions_revoke_insert(std::shared_ptr<anh::component::Entity> who) = 0;
+	virtual bool permissions_grant_removal(std::shared_ptr<anh::component::Entity> who) = 0;
+	virtual bool permissions_revoke_removal(std::shared_ptr<anh::component::Entity> who) = 0;
+
+	virtual bool permissions_grant_view(std::string argument) = 0;
+	virtual bool permissions_revoke_view(std::string argument) = 0;
+	virtual bool permissions_grant_insert(std::string argument) = 0;
+	virtual bool permissions_revoke_insert(std::string argument) = 0;
+	virtual bool permissions_grant_removal(std::string argument) = 0;
+	virtual bool permissions_revoke_removal(std::string argument) = 0;
 
 	//Size/Capacity Methods
 	virtual bool empty() = 0;
@@ -49,7 +66,7 @@ public:
 	virtual size_t capacity() = 0;
 	virtual bool capacity(size_t new_capacity) = 0;
 
-	virtual bool intrl_insert_(std::shared_ptr<anh::component::Entity> what) = 0;
+	virtual bool intrl_insert_(std::shared_ptr<anh::component::Entity> what, std::shared_ptr<ContainerComponentInterface> old_container) = 0;
 
 	static std::shared_ptr<NullContainerComponent> NullComponent;
 };
@@ -66,9 +83,10 @@ public:
 	virtual std::set<std::shared_ptr<anh::component::Entity>> aware_entities(std::shared_ptr<anh::component::Entity> caller_hint) { return std::set<std::shared_ptr<anh::component::Entity>>(); }
 
 	//Modification Methods
-	virtual bool insert(std::shared_ptr<anh::component::Entity> who, std::shared_ptr<anh::component::Entity> what, bool force_insertion=false) { return false; }
-	virtual bool remove(std::shared_ptr<anh::component::Entity> who, std::shared_ptr<anh::component::Entity> what, bool force_removal=false) { return false; }
-	virtual bool transfer_to( std::shared_ptr<anh::component::Entity> who, std::shared_ptr<anh::component::Entity> what, std::shared_ptr<ContainerComponentInterface> recv_container, bool force_insertion=false, bool force_removal=false) { return false; }
+	virtual bool insert(std::shared_ptr<anh::component::Entity> who, std::shared_ptr<anh::component::Entity> what, bool force_insertion) { return false; }
+	virtual bool insert(std::shared_ptr<anh::component::Entity> who, std::shared_ptr<anh::component::Entity> what, unsigned int id, bool force_insertion) { return false; }
+	virtual bool remove(std::shared_ptr<anh::component::Entity> who, std::shared_ptr<anh::component::Entity> what, bool force_removal) { return false; }
+	virtual bool transfer_to( std::shared_ptr<anh::component::Entity> who, std::shared_ptr<anh::component::Entity> what, std::shared_ptr<ContainerComponentInterface> recv_container, bool force_insertion, bool force_removal) { return false; }
 	
 	//Notification
 	virtual void make_aware(std::shared_ptr<anh::component::Entity> what) { /* Nothing to update */ };
@@ -76,8 +94,24 @@ public:
 	virtual void make_unaware(std::shared_ptr<anh::component::Entity> what) { /* Nothing to update */ };
 
 	//Permission Query Methods
-	virtual std::shared_ptr<ContainerPermissionsInterface> permissions() { return null_permissions; }
-	virtual bool permissions(std::shared_ptr<ContainerPermissionsInterface> new_permissions) { return false; }
+	virtual bool permissions_can_view(std::shared_ptr<anh::component::Entity> who) { return false; }
+	virtual bool permissions_can_insert(std::shared_ptr<anh::component::Entity> who, std::shared_ptr<anh::component::Entity> what) { return false; }
+	virtual bool permissions_can_insert(std::shared_ptr<anh::component::Entity> who, std::shared_ptr<anh::component::Entity> what, const std::set<anh::HashString>& arrangement_to_use) { return false; }
+	virtual bool permissions_can_remove(std::shared_ptr<anh::component::Entity> who, std::shared_ptr<anh::component::Entity> what) { return false; }
+
+	virtual bool permissions_grant_view(std::shared_ptr<anh::component::Entity> who) { return false; }
+	virtual bool permissions_revoke_view(std::shared_ptr<anh::component::Entity> who) { return false; }
+	virtual bool permissions_grant_insert(std::shared_ptr<anh::component::Entity> who) { return false; }
+	virtual bool permissions_revoke_insert(std::shared_ptr<anh::component::Entity> who) { return false; }
+	virtual bool permissions_grant_removal(std::shared_ptr<anh::component::Entity> who) { return false; }
+	virtual bool permissions_revoke_removal(std::shared_ptr<anh::component::Entity> who) { return false; }
+
+	virtual bool permissions_grant_view(std::string argument) { return false; }
+	virtual bool permissions_revoke_view(std::string argument) { return false; }
+	virtual bool permissions_grant_insert(std::string argument) { return false; }
+	virtual bool permissions_revoke_insert(std::string argument) { return false; }
+	virtual bool permissions_grant_removal(std::string argument) { return false; }
+	virtual bool permissions_revoke_removal(std::string argument) { return false; }
 
 	virtual bool empty() { return false; }
 	virtual bool full() { return true; }
@@ -86,8 +120,7 @@ public:
 	virtual size_t capacity() { return null_permissions->capacity(); }
 	virtual bool capacity(size_t new_capacity) { return false; }
 
-	virtual bool intrl_insert_(std::shared_ptr<anh::component::Entity> what) { return false; }
-
+	virtual bool intrl_insert_(std::shared_ptr<anh::component::Entity> what, std::shared_ptr<ContainerComponentInterface> old_container) { return false; }
 private:
 	static std::shared_ptr<NullContainerPermission> null_permissions;
 };

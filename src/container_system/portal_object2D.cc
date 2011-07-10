@@ -1,4 +1,4 @@
-#include <container_system/PortalObject2D.h>
+#include <container_system/portal_object2D.h>
 #include <glm/core/func_geometric.hpp>
 
 using namespace spatial_index;
