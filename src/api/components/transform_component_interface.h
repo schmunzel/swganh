@@ -35,6 +35,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <glm/glm.hpp>
 
 using namespace anh::component;
+
+namespace container_system
+{
+	class region_interface;
+};
+
 namespace anh {namespace api { namespace components {
 
 class NullTransformComponent;
@@ -44,9 +50,9 @@ class TransformComponentInterface : public BaseComponent {
     TransformComponentInterface(const ComponentType& type)
         : BaseComponent("Transform", type) { }
 
-    virtual const glm::vec3& position() = 0;
+    virtual glm::vec3 position() = 0;
     virtual void position(const float x, const float y, const float z) = 0;
-    virtual const glm::quat& rotation() = 0;
+    virtual glm::quat rotation() = 0;
     virtual void rotation(const float x, const float y, const float z, const float w) = 0;
     virtual const float speed() = 0;
 
@@ -58,7 +64,11 @@ class TransformComponentInterface : public BaseComponent {
     virtual void move(const glm::quat& rotation, float distance) = 0;
     virtual void move_forward(const float& distance) = 0;
     virtual void move_back(const float& distance) = 0;
-    virtual float rotation_angle() const = 0;
+    virtual float rotation_angle() = 0;
+
+	virtual void insert_region(std::shared_ptr<container_system::region_interface> region) = 0;
+	virtual void remove_region(std::shared_ptr<container_system::region_interface> region) = 0;
+	virtual std::set<std::shared_ptr<container_system::region_interface>> regions() = 0;
 
     static std::shared_ptr<NullTransformComponent> NullComponent;
 };
@@ -67,9 +77,9 @@ public:
     NullTransformComponent()
         : TransformComponentInterface("NullTransform") { }
     
-    virtual const glm::vec3& position() { return position_; }
+    virtual glm::vec3 position() { return position_; }
     void position(const float x, const float y, const float z){}
-    const glm::quat& rotation() { return rotation_; }
+    glm::quat rotation() { return rotation_; }
     void rotation(const float x, const float y, const float z, const float w){};
     void rotate(const float& degrees){};
     void rotate_left(const float& degrees){};
@@ -78,8 +88,12 @@ public:
     void move(const glm::quat& rotation, float distance){};
     void move_forward(const float& distance){};
     void move_back(const float& distance){};
-    float rotation_angle() const{ return 0.0f; }
+    float rotation_angle() { return 0.0f; }
     const float speed() { return speed_; }
+
+	void insert_region(std::shared_ptr<container_system::region_interface> region) {}
+	void remove_region(std::shared_ptr<container_system::region_interface> region) {}
+	std::set<std::shared_ptr<container_system::region_interface>> regions() {return std::set<std::shared_ptr<container_system::region_interface>>();}
 private:
     glm::vec3 position_;
     glm::quat rotation_;

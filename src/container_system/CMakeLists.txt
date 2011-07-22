@@ -2,7 +2,8 @@ include(ANHLibrary)
 
 AddANHLibrary(container_system
     DEPENDS 
-		libanh  
+		libanh 
+        mod_anh_transform
 	ADDITIONAL_INCLUDE_DIRS
 	    ${Boost_INCLUDE_DIR}
 		${GLOG_INCLUDE_DIR}

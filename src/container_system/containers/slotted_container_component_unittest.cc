@@ -358,7 +358,7 @@ TEST(SlottedContainerTests, EntityInSlot)
 	e->AttachComponent(sac);
 
 	EXPECT_CALL(*permission_mock, can_insert(_, _))
-		.Times(2)
+		.Times(1)
 		.WillOnce(Return(true));
 
 	EXPECT_CALL(*permission_mock, inserted(_))
