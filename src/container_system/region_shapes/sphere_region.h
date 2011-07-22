@@ -1,14 +1,14 @@
-#ifndef CIRCLE_REGION_H
-#define CIRCLE_REGION_H
+#ifndef SPHERE_REGION_H
+#define SPHERE_REGION_H
 
 #include <api/region_interface.h>
 namespace container_system
 {
 
-class circle_region : public container_system::region_interface
+class sphere_region : public container_system::region_interface
 {
 public:
-	circle_region(glm::vec3& center, float radius);
+	sphere_region(glm::vec3& center, float radius);
 
 	virtual bool within_extent(const glm::vec3& position);
 	virtual const std::vector<glm::vec3>& verts() {return verts_;}

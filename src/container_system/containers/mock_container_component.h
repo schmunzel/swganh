@@ -15,7 +15,7 @@ public:
 
 	//View Methods
 	MOCK_METHOD2(has_entity, bool(std::shared_ptr<anh::component::Entity>, std::shared_ptr<anh::component::Entity>));
-	MOCK_METHOD4(contained_objects, bool(std::shared_ptr<anh::component::Entity>, std::function<void(std::shared_ptr<anh::component::Entity>, std::shared_ptr<anh::component::Entity>)>, size_t, bool));
+	MOCK_METHOD5(contained_objects, bool(std::shared_ptr<anh::component::Entity>, bool causes_populate, std::function<void(std::shared_ptr<anh::component::Entity>, std::shared_ptr<anh::component::Entity>)>, size_t, bool));
 	MOCK_METHOD2(entity_in_slot, std::shared_ptr<anh::component::Entity>(std::shared_ptr<anh::component::Entity>,std::string));
 
 	//Modification Methods
@@ -27,7 +27,9 @@ public:
 	//Awareness Methods
 	MOCK_METHOD1(make_aware, void(std::shared_ptr<anh::component::Entity>));
 	MOCK_METHOD1(make_unaware, void(std::shared_ptr<anh::component::Entity>));
-	MOCK_METHOD2(state_update, void(std::shared_ptr<anh::component::Entity>, glm::vec3& old));
+
+	MOCK_METHOD4(state_update, void(std::shared_ptr<anh::component::Entity>, const glm::vec3& oldpos, const glm::vec3& newpos, const glm::quat& rot));
+	
 	MOCK_METHOD1(aware_entities, std::set<std::shared_ptr<anh::component::Entity>>(std::shared_ptr<anh::component::Entity>));
 
 	//Permission Methods
@@ -56,6 +58,12 @@ public:
 	MOCK_METHOD0(size, size_t());
 	MOCK_METHOD0(capacity, size_t());
 	MOCK_METHOD1(capacity, bool(size_t));
+
+	MOCK_METHOD0(collect_garbage, bool());
+	MOCK_METHOD0(is_populated, bool());
+
+	MOCK_METHOD0(persist, void());
+	MOCK_METHOD0(populate, void());
 
 	MOCK_METHOD2(intrl_insert_, bool(std::shared_ptr<anh::component::Entity>, std::shared_ptr<ContainerComponentInterface>));
 };

@@ -39,13 +39,13 @@ namespace anh_python { namespace components {
 
 void define_class_transform_component() {
     
-    // overloads
+   /* // overloads
    // const EntityId      (TransformComponent::*get_parent_id)(void)              = &TransformComponent::parent_id; 
     //void                (TransformComponent::*set_parent_id)(const EntityId)    = &TransformComponent::parent_id;
-    const glm::vec3&    (TransformComponent::*get_pos)(void)                    = &TransformComponent::position;
+    glm::vec3    (TransformComponent::*get_pos)(void)                    = &TransformComponent::position;
     void                (TransformComponent::*set_pos)(const glm::vec3&)        = &TransformComponent::position;
     void (TransformComponent::*set_pos3)(const float, const float, const float) = &TransformComponent::position;
-    const glm::quat&    (TransformComponent::*get_rot)(void)                    = &TransformComponent::rotation;
+    glm::quat    (TransformComponent::*get_rot)(void)                    = &TransformComponent::rotation;
     void                (TransformComponent::*set_rot)(const glm::quat&)        = &TransformComponent::rotation;
     void (TransformComponent::*set_rot4)(const float, const float, const float, const float) = &TransformComponent::rotation;
     const float         (TransformComponent::*get_speed)(void)                  = &TransformComponent::speed;
@@ -59,15 +59,12 @@ void define_class_transform_component() {
         "which relates to the specific ID.",
         init<>())
         .def(init< const glm::vec3&, const glm::quat&, const float >())
-        //.def("object_id", &TransformComponent::entity_id, return_value_policy<copy_const_reference>())
-        //.def("parent_id", get_parent_id)
-        //.def("parent_id", set_parent_id)
-        .def("position", get_pos, return_internal_reference<>(),
+        .def("position", get_pos,
         "Gets a L{glm::vec3} of the current position, @returns internal reference.")
         .def("position", set_pos)
         .def("position", set_pos3,
         "Sets position L{glm::vec3} by passing in 3 floats representing x,y,z coordinates of the entity")
-        .def("rotation", get_rot, return_internal_reference<>(),
+        .def("rotation", get_rot,
             "Gets a L{glm::quat} of the current entities rotation, @returns internal reference.")
         .def("rotation", set_rot)
         .def("rotation", set_rot4,
@@ -88,10 +85,9 @@ void define_class_transform_component() {
             "Moves the entity forward x meters")
         .def("move_back", &TransformComponent::move_back,
             "Moves the entity back x meters")
-        .def("rotation_angle", &TransformComponent::rotation_angle,
-            "Gets the current rotation object of the entity")
+        .def("rotation_angle", &TransformComponent::rotation_angle)
         .def("HandleMessage", &TransformComponent::HandleMessage)
-        ;
+        ;*/
 }
 
 } // components

@@ -28,7 +28,7 @@ std::set<std::shared_ptr<anh::component::Entity>> sorted_container_component::aw
 	return aware_entities_;
 }
 
-bool sorted_container_component::contained_objects(std::shared_ptr<anh::component::Entity> who, std::function<void(std::shared_ptr<anh::component::Entity>, std::shared_ptr<anh::component::Entity>)> funct, size_t max_depth, bool top_down)
+bool sorted_container_component::contained_objects(std::shared_ptr<anh::component::Entity> who, bool causes_populate, std::function<void(std::shared_ptr<anh::component::Entity>, std::shared_ptr<anh::component::Entity>)> funct, size_t max_depth, bool top_down)
 {
 	boost::shared_lock<boost::shared_mutex> lock(intrl_lock_);
 	if(permissions_->can_view(who))
@@ -41,7 +41,7 @@ bool sorted_container_component::contained_objects(std::shared_ptr<anh::componen
 				funct(who, *itr);
 				if(max_depth != 1)
 				{
-					(*itr)->QueryInterface<ContainerComponentInterface>("Container")->contained_objects(who, funct, (max_depth != 0) ? max_depth-1 : 0);
+					(*itr)->QueryInterface<ContainerComponentInterface>("Container")->contained_objects(who, causes_populate, funct, (max_depth != 0) ? max_depth-1 : 0);
 				}
 			}
 		}
@@ -51,7 +51,7 @@ bool sorted_container_component::contained_objects(std::shared_ptr<anh::componen
 			{
 				if(max_depth != 1)
 				{
-					(*itr)->QueryInterface<ContainerComponentInterface>("Container")->contained_objects(who, funct, (max_depth != 0) ? max_depth-1 : 0);
+					(*itr)->QueryInterface<ContainerComponentInterface>("Container")->contained_objects(who, causes_populate, funct, (max_depth != 0) ? max_depth-1 : 0);
 				}
 				funct(who, *itr);
 			}
@@ -95,6 +95,8 @@ bool sorted_container_component::capacity(size_t new_capacity)
 
 bool sorted_container_component::insert(std::shared_ptr<Entity> who, std::shared_ptr<Entity> what, bool force_insertion)
 {
+	what->parent_intrl_(entity());
+
 	boost::upgrade_lock<boost::shared_mutex> lock(intrl_lock_);
 	if(force_insertion || permissions_->can_insert(who, what))
 	{
@@ -133,7 +135,7 @@ bool sorted_container_component::remove(std::shared_ptr<Entity> who, std::shared
 			std::for_each(aware_entities_.begin(), aware_entities_.end(), [&] (std::shared_ptr<Entity> e) {
 				
 				//Send Destroy for all Sub Objects
-				what->QueryInterface<ContainerComponentInterface>("Container")->contained_objects(e, [] (std::shared_ptr<Entity> a, std::shared_ptr<Entity> b) {
+				what->QueryInterface<ContainerComponentInterface>("Container")->contained_objects(e, false, [] (std::shared_ptr<Entity> a, std::shared_ptr<Entity> b) {
 					//CALL TO KRONOS' DESTROY GOES HERE
 				}, 0, false);
 				
@@ -170,7 +172,7 @@ bool sorted_container_component::transfer_to(std::shared_ptr<Entity> who, std::s
 				else if(!in_recv && in_send)
 				{
 					//Destroy all children for the e
-					what->QueryInterface<ContainerComponentInterface>("Container")->contained_objects(e, [] (std::shared_ptr<Entity> a, std::shared_ptr<Entity> b) {
+					what->QueryInterface<ContainerComponentInterface>("Container")->contained_objects(e, false, [] (std::shared_ptr<Entity> a, std::shared_ptr<Entity> b) {
 						//CALL TO KRONOS' DESTROY GOES HERE
 					}, 0, false);
 
@@ -180,7 +182,7 @@ bool sorted_container_component::transfer_to(std::shared_ptr<Entity> who, std::s
 				{
 					//CALL TO KRONOS' CREATE GOES HERE
 
-					what->QueryInterface<ContainerComponentInterface>("Container")->contained_objects(e, [] (std::shared_ptr<Entity> a, std::shared_ptr<Entity> b) {
+					what->QueryInterface<ContainerComponentInterface>("Container")->contained_objects(e, true, [] (std::shared_ptr<Entity> a, std::shared_ptr<Entity> b) {
 						//CALL TO KRONOS' CREATE GOES HERE
 					}, 0, true);
 				}
@@ -219,7 +221,7 @@ void sorted_container_component::make_aware(std::shared_ptr<anh::component::Enti
 	}
 }
 
-void sorted_container_component::state_update(std::shared_ptr<anh::component::Entity> what, glm::vec3& old)
+void sorted_container_component::state_update(std::shared_ptr<anh::component::Entity> what, const glm::vec3& oldpos, const glm::vec3& newpos, const glm::quat& rotation)
 {
 	boost::shared_lock<boost::shared_mutex> lock(intrl_lock_);
 	std::for_each(aware_entities_.begin(), aware_entities_.end(), [&] (std::shared_ptr<Entity> e) {
@@ -248,6 +250,8 @@ void sorted_container_component::make_unaware(std::shared_ptr<anh::component::En
 
 bool sorted_container_component::intrl_insert_(std::shared_ptr<anh::component::Entity> what, std::shared_ptr<ContainerComponentInterface> old_container)
 {
+	what->parent_intrl_(entity());
+
 	boost::unique_lock<boost::shared_mutex> lock(intrl_lock_);
 	contained_objects_.insert(what);
 	return true;

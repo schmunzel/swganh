@@ -94,7 +94,7 @@ protected:
 
 private:
     
-	std::weak_ptr<anh::component::Entity>						entity_;
+	std::weak_ptr<anh::component::Entity>		entity_;
     anh::event_dispatcher::EventDispatcher		event_dispatcher_;
     ComponentType								type_;
     ComponentType								interface_;
