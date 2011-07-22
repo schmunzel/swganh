@@ -28,11 +28,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #define MOD_ANH_TRANSFORM_TRANFORM_COMPONENT_H
 
 #include <api/components/transform_component_interface.h>
+#include <api/region_interface.h>
 #include <mod_anh_transform/transform_db_mapper.h>
 #include <anh/module_manager/module_main.h>
-#include <boost/flyweight.hpp>
+#include <boost/thread/mutex.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <glm/glm.hpp>
+#include <set>
 
 using namespace anh::component;
 
@@ -47,14 +49,14 @@ public:
     void Init(boost::property_tree::ptree& pt);
     virtual void Update(const float deltaMilliseconds);
     
-    void position(const glm::vec3& position) { position_ = position; }
-    void position(const float x, const float y, const float z) { position_.x = x; position_.y = y; position_.z = z;}
-    const glm::vec3& position() { return position_; }
-    void rotation(const glm::quat& rotation) { rotation_ = rotation; }
-    void rotation(const float x, const float y, const float z, const float w) { rotation_.x = x; rotation_.y = y; rotation_.z = z; rotation_.w = w;}
-    const glm::quat& rotation() { return rotation_; }
-    void speed(const float speed) { speed_ = speed; }
-    const float speed() { return speed_; }
+    void position(const glm::vec3& position);
+    void position(const float x, const float y, const float z);
+    glm::vec3 position();
+    void rotation(const glm::quat& rotation);
+    void rotation(const float x, const float y, const float z, const float w);
+    glm::quat rotation();
+    void speed(const float speed);
+    const float speed();
 
     // convenience commands
     // rotate by degrees
@@ -63,15 +65,23 @@ public:
     void rotate_right(const float& degrees);
     void face(const glm::vec3& target_position);
     void move(const glm::quat& rotation, float distance);
+	void move(float distance);
     void move_forward(const float& distance);
     void move_back(const float& distance);
-    float rotation_angle() const;
+    float rotation_angle();
+
+	void insert_region(std::shared_ptr<container_system::region_interface> region);
+	void remove_region(std::shared_ptr<container_system::region_interface> region);
+	std::set<std::shared_ptr<container_system::region_interface>> regions();
 
 private:
-    EntityId parent_id_;
+	std::set<std::shared_ptr<container_system::region_interface>> regions_;
+
     glm::vec3 position_;
     glm::quat rotation_;
     float speed_;
+
+	boost::mutex lock_;
 };
 
 } // transform

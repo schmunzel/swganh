@@ -7,11 +7,10 @@ circle_region::circle_region(glm::vec3& center, float radius)
 	: center_(center)
 	, radius_squared_(radius*radius)
 {
-	float half_radius = radius/2;
-	verts_.push_back(glm::vec3(center.x - half_radius, 0, center.z - half_radius));		
-	verts_.push_back(glm::vec3(center.x - half_radius, 0, center.z + half_radius));		
-	verts_.push_back(glm::vec3(center.x + half_radius, 0, center.z - half_radius));		
-	verts_.push_back(glm::vec3(center.x + half_radius, 0, center.z + half_radius));		
+	verts_.push_back(glm::vec3(center.x - radius, 0, center.z - radius));		
+	verts_.push_back(glm::vec3(center.x - radius, 0, center.z + radius));		
+	verts_.push_back(glm::vec3(center.x + radius, 0, center.z - radius));		
+	verts_.push_back(glm::vec3(center.x + radius, 0, center.z + radius));		
 }
 
 bool circle_region::within_extent(const glm::vec3& position)

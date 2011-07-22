@@ -743,11 +743,11 @@ TEST(SortedContainerTests, ContainedObjectsWorks)
 		.WillOnce(Return(false));
 
 	unsigned int i = 0;
-	sorted->contained_objects(a, [&] (std::shared_ptr<Entity> who, std::shared_ptr<Entity> what) {
+	sorted->contained_objects(a, true, [&] (std::shared_ptr<Entity> who, std::shared_ptr<Entity> what) {
 		++i;
 	});
 
-	sorted->contained_objects(a, [] (std::shared_ptr<Entity> who, std::shared_ptr<Entity> what) {
+	sorted->contained_objects(a, true, [] (std::shared_ptr<Entity> who, std::shared_ptr<Entity> what) {
 		ASSERT_EQ(0, -1) << "`Who` can see `what` when he shouldnt!";
 	});
 }

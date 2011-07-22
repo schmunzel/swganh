@@ -1,13 +1,14 @@
 #include <container_system/containers/universe_container_component.h>
 #include <mod_anh_transform/transform_component.h>
 
+#include <limits>
 #include <math.h>
+
+#include <boost/thread/locks.hpp>
 
 using namespace container_system;
 using namespace anh::api;
 using namespace anh::api::components;
-
-int universe_container_component::universe_bucket::next_id = 0;
 
 universe_container_component::universe_container_component(float map_size, float bucket_size, float viewing_range, bool _3_dimensional_)
 	: ContainerComponentInterface("Universe")
@@ -15,47 +16,44 @@ universe_container_component::universe_container_component(float map_size, float
 	, bucket_width_(bucket_size)
 	, viewing_range_(viewing_range)
 	, buckets_per_row_(ceil(map_size / bucket_size))
+	, buckets_sq(buckets_per_row_*buckets_per_row_)
 	, is_3D_(_3_dimensional_)
 {
-	if(_3_dimensional_)
+	size_t id = 0;
+	for(unsigned int i = 0; i < ((is_3D_) ? buckets_per_row_ : 1); ++i) 
 	{
-		for(unsigned int i = 0; i < buckets_per_row_; ++i)
-			for(unsigned int j = 0; j < buckets_per_row_; ++j)
-				for(unsigned int k =0; k < buckets_per_row_; ++k)
-					buckets_.push_back(std::make_shared<universe_bucket>());
-
-		//Generate the relevant buckets
-		int depth = (int)ceil(viewing_range_ / bucket_width_);
-		std::for_each(buckets_.begin(), buckets_.end(), [&, this] (std::shared_ptr<universe_bucket> bucket) {
-			generate_relevant_buckets_3D_(depth, bucket);
-		});
+		for(unsigned int j = 0; j < buckets_per_row_; ++j) 
+		{
+			for(unsigned int k =0; k < buckets_per_row_; ++k) 
+			{
+				buckets_.push_back(std::make_shared<universe_bucket>(id++));
+			}
+		}
 	}
-	else
-	{
-		for(unsigned int i = 0; i < buckets_per_row_; ++i)
-			for(unsigned int j = 0; j < buckets_per_row_; ++j)
-				buckets_.push_back(std::make_shared<universe_bucket>());
-
-		//Generate the relevant buckets
-		int depth = (int)ceil(viewing_range_ / bucket_width_);
-		std::for_each(buckets_.begin(), buckets_.end(), [&, this] (std::shared_ptr<universe_bucket> bucket) {
-			generate_relevant_buckets_2D_(depth, bucket);
-		});
-	}
+	//Generate the relevant buckets
+	int depth = (int)ceil(viewing_range_ / bucket_width_);
+	std::for_each(buckets_.begin(), buckets_.end(), [&, this] (std::shared_ptr<universe_bucket> bucket) {
+		generate_relevant_buckets_(depth, bucket);
+	});
 }
 
 bool universe_container_component::insert(std::shared_ptr<anh::component::Entity> who, std::shared_ptr<anh::component::Entity> what, bool force_insertion)
 {
+	what->parent_intrl_(entity());
+
 	//Get the Transform Component
 	auto transform = what->QueryInterface<anh::api::components::TransformComponentInterface>("Transform");
 
-	//Find the associated bucket
-	auto assoc_bucket = buckets_[relevant_bucket_(transform->position())];
-	
-	auto end = assoc_bucket->relevant_buckets_.end();
-	auto itr = assoc_bucket->relevant_buckets_.begin();
+	//Prep the player regions before we even lock the buckets.
+	auto player_regions = transform->regions();
 
+	//Find the associated bucket
+	auto position = transform->position();
+	auto assoc_bucket = buckets_[relevant_bucket_(position)];
+	
 	//For Every Bucket in Associated Bucket Relevant Bucket list
+	auto itr = assoc_bucket->relevant_buckets_.begin();
+	auto end = assoc_bucket->relevant_buckets_.end();
 	for(; itr != end; ++itr)
 	{
 		//Lock Bucket
@@ -64,12 +62,28 @@ bool universe_container_component::insert(std::shared_ptr<anh::component::Entity
 		else
 			(*itr)->mutex_.lock_shared();
 	} //End For
-
-	//Insert into the associated bucket
-	assoc_bucket->contained_objects_.insert(what);
 	
-	itr = assoc_bucket->relevant_buckets_.begin();
+	//Do region updates.
+	auto region_end = assoc_bucket->contained_regions_.end();
+	for(auto region_itr = assoc_bucket->contained_regions_.begin(); region_itr != region_end; ++region_itr)
+	{
+		bool within = (*region_itr)->within_extent(position);
+		bool has = player_regions.find(*region_itr) != player_regions.end();
+
+		if(!within && has)
+		{
+			transform->remove_region(*region_itr);
+			(*region_itr)->on_exit(what);
+		}
+		else if(within && !has)
+		{
+			transform->insert_region(*region_itr);
+			(*region_itr)->on_enter(what);
+		}
+	}
+
 	//For Every Bucket in Associated Bucket Relevant Bucket list
+	itr = assoc_bucket->relevant_buckets_.begin();
 	for(; itr != end; ++itr)
 	{
 		//For Every Object in the Bucket
@@ -78,10 +92,15 @@ bool universe_container_component::insert(std::shared_ptr<anh::component::Entity
 
 			//call make_aware on the object
 			e->QueryInterface<ContainerComponentInterface>("Container")->make_aware(what);
+			what->QueryInterface<ContainerComponentInterface>("Container")->make_aware(e);
 		}); //End For
 	} //End For
 
+	//Insert into the associated bucket
+	assoc_bucket->contained_objects_.insert(what);
+
 	//For Every Bucket in Associated Bucket Relevant Bucket list
+	itr = assoc_bucket->relevant_buckets_.begin();
 	for(; itr != end; ++itr)
 	{
 		//UnLock Bucket
@@ -96,14 +115,33 @@ bool universe_container_component::insert(std::shared_ptr<anh::component::Entity
 
 bool universe_container_component::intrl_insert_(std::shared_ptr<anh::component::Entity> what, std::shared_ptr<ContainerComponentInterface> old_container)
 {
+	what->parent_intrl_(entity());
+
 	//Get the Transform Component
 	auto transform = what->QueryInterface<anh::api::components::TransformComponentInterface>("Transform");
 
+	auto player_regions = transform->regions();
+
 	//Find the associated bucket
-	auto assoc_bucket = buckets_[relevant_bucket_(transform->position())];
+	auto position = transform->position();
+	auto assoc_bucket = buckets_[relevant_bucket_(position)];
 	
 	assoc_bucket->mutex_.lock();
 	assoc_bucket->contained_objects_.insert(what);
+
+	//Do region updates.
+	auto region_end = assoc_bucket->contained_regions_.end();
+	for(auto region_itr = assoc_bucket->contained_regions_.begin(); region_itr != region_end; ++region_itr)
+	{
+		bool within = (*region_itr)->within_extent(position);
+		bool has = player_regions.find(*region_itr) != player_regions.end();
+
+		if(!within && has)
+			transform->remove_region(*region_itr);
+		else if(within && !has)
+			transform->insert_region(*region_itr);
+	}
+
 	assoc_bucket->mutex_.unlock();
 
 	return true;
@@ -114,26 +152,48 @@ bool universe_container_component::remove(std::shared_ptr<anh::component::Entity
 	//Get the Transform Component
 	auto transform = what->QueryInterface<anh::api::components::TransformComponentInterface>("Transform");
 
+	auto player_regions = transform->regions();
+
 	//Find the associated bucket
-	auto assoc_bucket = buckets_[relevant_bucket_(transform->position())];
+	auto position = transform->position();
+	auto cur_parent = buckets_[relevant_bucket_(position)];
 
 	//For Every Bucket in Associated Bucket Relevant Bucket list
-	auto itr = assoc_bucket->relevant_buckets_.begin();
-	auto end = assoc_bucket->relevant_buckets_.end();
+	auto itr = cur_parent->relevant_buckets_.begin();
+	auto end = cur_parent->relevant_buckets_.end();
 	for(; itr != end; ++itr)
 	{
 		//Lock Bucket
-		if(*itr == assoc_bucket)
+		if(*itr == cur_parent)
 			(*itr)->mutex_.lock();
 		else
 			(*itr)->mutex_.lock_shared();
 	} //End For
 
 	//Remove from the associated bucket
-	assoc_bucket->contained_objects_.erase(what);
-	
-	itr = assoc_bucket->relevant_buckets_.begin();
+	cur_parent->contained_objects_.erase(what);
+
+	//Do region updates.
+	auto region_end = cur_parent->contained_regions_.end();
+	for(auto region_itr = cur_parent->contained_regions_.begin(); region_itr != region_end; ++region_itr)
+	{
+		bool within = (*region_itr)->within_extent(position);
+		bool has = player_regions.find(*region_itr) != player_regions.end();
+
+		if(!within && has)
+		{
+			transform->remove_region(*region_itr);
+			(*region_itr)->on_exit(what);
+		}
+		else if(within && !has)
+		{
+			transform->insert_region(*region_itr);
+			(*region_itr)->on_enter(what);
+		}
+	}
+
 	//For Every Bucket in Associated Bucket Relevant Bucket list
+	itr = cur_parent->relevant_buckets_.begin();
 	for(; itr != end; ++itr)
 	{
 		//For Every Object in the Bucket
@@ -145,10 +205,11 @@ bool universe_container_component::remove(std::shared_ptr<anh::component::Entity
 	} //End For
 
 	//For Every Bucket in Associated Bucket Relevant Bucket list
+	itr = cur_parent->relevant_buckets_.begin();
 	for(; itr != end; ++itr)
 	{
 		//UnLock Bucket
-		if(*itr == assoc_bucket)
+		if(*itr == cur_parent)
 			(*itr)->mutex_.unlock();
 		else
 			(*itr)->mutex_.unlock_shared();
@@ -315,16 +376,15 @@ std::set<std::shared_ptr<anh::component::Entity>> universe_container_component::
 	}
 
 	//Call the function provided for all children
-	itr = parent->relevant_buckets_.begin();
-	for(; itr != end; ++itr)
+	for(itr = parent->relevant_buckets_.begin(); itr != end; ++itr)
 	{
 		auto sub_itr = (*itr)->contained_objects_.begin();
 		auto sub_end = (*itr)->contained_objects_.end();
 		for(; sub_itr != sub_end; ++sub_itr)
 		{
 			result_set.insert(*sub_itr);
-			(*sub_itr)->QueryInterface<ContainerComponentInterface>("Container")->contained_objects(entity(), [&] (std::shared_ptr<Entity> t, std::shared_ptr<Entity> e) {
-				result_set.insert(e);
+			(*sub_itr)->QueryInterface<ContainerComponentInterface>("Container")->contained_objects(entity(), false, [&] (std::shared_ptr<Entity> t, std::shared_ptr<Entity> e) { 
+				result_set.insert(e); 
 			});
 		}
 
@@ -335,28 +395,53 @@ std::set<std::shared_ptr<anh::component::Entity>> universe_container_component::
 	return result_set;
 }
 
-void universe_container_component::state_update(std::shared_ptr<anh::component::Entity> what, glm::vec3& old)
+void universe_container_component::state_update(std::shared_ptr<anh::component::Entity> what, const glm::vec3& oldpos, const glm::vec3& newpos, const glm::quat& rotation)
 {
-	//Get the Transform Component
-	auto transform = what->QueryInterface<anh::api::components::TransformComponentInterface>("Transform");
-
 	//Find the associated bucket with the old parent
-	auto old_parent = buckets_[relevant_bucket_(old)];
+	auto old_parent = buckets_[relevant_bucket_(oldpos)];
+	auto new_parent = buckets_[relevant_bucket_(newpos)];
 
-	//Find the associated bucket with the new parent
-	auto new_parent = buckets_[relevant_bucket_(transform->position())];
-
-	//If the buckets are the same.
 	if(old_parent == new_parent)
 	{
+		bool rotation_only = oldpos == newpos;
+
 		auto end = old_parent->relevant_buckets_.end();
 		auto itr = old_parent->relevant_buckets_.begin();
+		
+		auto player_regions = what->QueryInterface<anh::api::components::TransformComponentInterface>("Transform")->regions();
+
+		std::set<std::shared_ptr<container_system::region_interface>> all_regions;
+
+		if(!rotation_only)
+		{
+			all_regions.insert(player_regions.begin(), player_regions.end());
+		}
+
 		//For Every Bucket in Associated Bucket Relevant Bucket List
 		for(; itr != end; ++itr)
 		{
-			//Lock Bucket
 			(*itr)->mutex_.lock_shared();
-		} //End For
+		}
+
+		if(!rotation_only)
+		{
+			//Do region updates.
+			all_regions.insert(old_parent->contained_regions_.begin(), old_parent->contained_regions_.end());
+			std::for_each(all_regions.begin(), all_regions.end(), [&] (std::shared_ptr<container_system::region_interface> r) {
+				bool within = r->within_extent(newpos);
+				bool has = player_regions.find(r) != player_regions.end();
+
+				if(!within && has)
+				{
+					r->on_exit(what);
+				}
+				else if(within && !has)
+				{
+					r->on_enter(what);
+				}
+
+			});
+		}
 
 		//For Every Bucket in Associated Bucket Relevant Bucket list
 		itr = old_parent->relevant_buckets_.begin();
@@ -370,17 +455,22 @@ void universe_container_component::state_update(std::shared_ptr<anh::component::
 
 			//Unlock Bucket to save some time
 			(*itr)->mutex_.unlock_shared();
-		} //End For
-	} 
+		}
+	}
 	else
 	{
+
 		//Create a Set for every bucket in both associated bucket relevant lists
 		std::set<std::shared_ptr<universe_bucket>> all_buckets;
 		all_buckets.insert(old_parent->relevant_buckets_.begin(), old_parent->relevant_buckets_.end());
 		all_buckets.insert(new_parent->relevant_buckets_.begin(), new_parent->relevant_buckets_.end());
 
+		auto player_regions = what->QueryInterface<anh::api::components::TransformComponentInterface>("Transform")->regions();
+
+		std::set<std::shared_ptr<container_system::region_interface>> all_regions;
+		all_regions.insert(player_regions.begin(), player_regions.end());
+
 		//For Every Bucket in The set
-			
 		auto end = all_buckets.end();
 		auto itr = all_buckets.begin();
 		for(; itr != end; ++itr)
@@ -395,6 +485,24 @@ void universe_container_component::state_update(std::shared_ptr<anh::component::
 				(*itr)->mutex_.lock_shared();
 			}
 		} //End For
+
+		//Do region updates.
+		all_regions.insert(new_parent->contained_regions_.begin(), new_parent->contained_regions_.end());
+		std::for_each(all_regions.begin(), all_regions.end(), [&] (std::shared_ptr<container_system::region_interface> r) {
+
+			bool within = r->within_extent(newpos);
+			bool has = player_regions.find(r) != player_regions.end();
+
+			if(!within && has)
+			{
+				r->on_exit(what);
+			}
+			else if(within && !has)
+			{
+				r->on_enter(what);
+			}
+
+		});
 
 		//For Every Bucket in the set
 		itr = all_buckets.begin();
@@ -447,7 +555,7 @@ void universe_container_component::state_update(std::shared_ptr<anh::component::
 	}
 }
 
-bool universe_container_component::contained_objects(std::shared_ptr<anh::component::Entity> who, std::function<void(std::shared_ptr<anh::component::Entity>, std::shared_ptr<anh::component::Entity>)> funct, size_t max_depth)
+bool universe_container_component::contained_objects(std::shared_ptr<anh::component::Entity> who, bool causes_populate, std::function<void(std::shared_ptr<anh::component::Entity>, std::shared_ptr<anh::component::Entity>)> funct, size_t max_depth, bool top_down)
 {
 	//Use the caller_hint to get the caller's transform
 	auto transform = who->QueryInterface<anh::api::components::TransformComponentInterface>("Transform");
@@ -471,11 +579,21 @@ bool universe_container_component::contained_objects(std::shared_ptr<anh::compon
 		auto sub_end = (*itr)->contained_objects_.end();
 		for(; sub_itr != sub_end; ++sub_itr)
 		{
-			funct(who, *sub_itr);
-
-			if(max_depth != 1)
+			if(top_down)
 			{
-				(*sub_itr)->QueryInterface<ContainerComponentInterface>("Container")->contained_objects(who, funct, (max_depth) ? max_depth-1 : 0);
+				funct(who, *sub_itr);
+				if(max_depth != 1)
+				{
+					(*sub_itr)->QueryInterface<ContainerComponentInterface>("Container")->contained_objects(who, causes_populate, funct, (max_depth) ? max_depth-1 : 0);
+				}
+			}
+			else
+			{
+				if(max_depth != 1)
+				{
+					(*sub_itr)->QueryInterface<ContainerComponentInterface>("Container")->contained_objects(who, causes_populate, funct, (max_depth) ? max_depth-1 : 0);
+				}
+				funct(who, *sub_itr);
 			}
 		}
 
@@ -486,63 +604,170 @@ bool universe_container_component::contained_objects(std::shared_ptr<anh::compon
 	return true;
 }
 
-void universe_container_component::generate_relevant_buckets_2D_(int depth, std::shared_ptr<universe_bucket> bucket)
-{	
-	bucket->relevant_buckets_.clear();
+void universe_container_component::insert(std::shared_ptr<region_interface> region)
+{
+	std::set<size_t> buckets = buckets_within_verts_(region->verts());
+	std::for_each(buckets.begin(), buckets.end(), [&, this] (size_t id) {
+		std::shared_ptr<universe_bucket> bucket = buckets_[id];
 
-	//Now we actually do it.
-	int low_x = (bucket->id % (int)buckets_per_row_) - depth;
-	int high_x = (bucket->id % (int)buckets_per_row_) + depth;
+		boost::upgrade_lock<boost::shared_mutex> lock(bucket->mutex_);
 
-	int low_z = (bucket->id - low_x) / buckets_per_row_ - depth;
-	int high_z = (bucket->id - low_x) / buckets_per_row_ + depth;
+		std::for_each(bucket->contained_objects_.begin(), bucket->contained_objects_.end(), [&] (std::shared_ptr<Entity> e) {
+			if(region->within_extent(e->QueryInterface<TransformComponentInterface>("Transform")->position()))
+			{
+				e->QueryInterface<TransformComponentInterface>("Transform")->insert_region(region);
+				region->on_appear(e);
+			}
+		});
 
+		{
+			boost::upgrade_to_unique_lock<boost::shared_mutex> unique(lock);
+			bucket->contained_regions_.insert(region);
+		}
+	});
+}
+
+void universe_container_component::remove(std::shared_ptr<region_interface> region)
+{
+	std::set<size_t> buckets = buckets_within_verts_(region->verts());
+	std::for_each(buckets.begin(), buckets.end(), [&, this] (size_t id) {
+		std::shared_ptr<universe_bucket> bucket = buckets_[id];
+		boost::upgrade_lock<boost::shared_mutex> lock(bucket->mutex_);
+		{
+			boost::upgrade_to_unique_lock<boost::shared_mutex> unique(lock);
+			bucket->contained_regions_.erase(region);
+		}
+
+		std::for_each(bucket->contained_objects_.begin(), bucket->contained_objects_.end(), [&] (std::shared_ptr<Entity> e) {
+			if(region->within_extent(e->QueryInterface<TransformComponentInterface>("Transform")->position()))
+			{
+				region->on_disappear(e);
+				e->QueryInterface<TransformComponentInterface>("Transform")->remove_region(region);
+			}
+		});
+
+	});
+}
+
+std::set<size_t> universe_container_component::buckets_within_verts_(const std::vector<glm::vec3>& region)	
+{
+	glm::vec3 max(-std::numeric_limits<float>::max(), -std::numeric_limits<float>::max(), -std::numeric_limits<float>::max());
+	glm::vec3 min(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
+
+	std::for_each(region.begin(), region.end(), [&] (const glm::vec3& vert) {
+		if(max.x < vert.x)
+			max.x = vert.x;
+		if(max.y < vert.y)
+			max.y = vert.y;
+		if(max.z < vert.z)
+			max.z = vert.z;
+
+		if(min.x > vert.x)
+			min.x = vert.x;
+		if(min.y > vert.y)
+			min.y = vert.y;
+		if(min.z > vert.z)
+			min.z = vert.z;
+	});
+
+	size_t min_x = (min.x + half_map_width_) / bucket_width_;
+	size_t max_x = (max.x + half_map_width_) / bucket_width_;
+
+	size_t min_y =(is_3D_) ? (min.y + half_map_width_) / bucket_width_ : 0;
+	size_t max_y =(is_3D_) ? (max.y + half_map_width_) / bucket_width_ : 0;
+
+	size_t min_z = (min.z + half_map_width_) / bucket_width_;
+	size_t max_z = (max.z + half_map_width_) / bucket_width_;
+
+	std::set<size_t> result_set;
+	for(size_t y = min_y; y <= max_y; ++y)
+	{
+		for(size_t x = min_x; x <= max_x; ++x)
+		{
+			for(size_t z = min_z; z <= max_z; ++z)
+			{
+				result_set.insert(x + y*buckets_sq + z*buckets_per_row_);
+			}
+		}
+	}
+	return result_set;
+}
+
+void universe_container_component::generate_relevant_buckets_(int depth, std::shared_ptr<universe_bucket> bucket)
+{
+	int b_id = bucket->id_;
+	size_t low_x, high_x, low_y, high_y, low_z, high_z;
+
+	//Find current values for x and z and temporarily keep them in the low variables.
+	low_x = b_id % buckets_per_row_;
+	low_z = (b_id - low_x) /  buckets_per_row_;
+
+	if(is_3D_)
+	{
+		//Find the current value for y
+		low_y = low_z / buckets_per_row_;
+
+		//Adjust depth levels
+		high_y = low_y + depth;
+		low_y -= depth;
+
+		//Clean up the y values.
+		if(low_y < 0)
+			low_y = 0;
+		if(high_y >= buckets_per_row_)
+			high_y = buckets_per_row_-1;
+	}
+	else
+	{
+		low_y = 0;
+		high_y = 0;
+	}
+
+	//Adjust the depth levels for x and z
+	high_x = low_x + depth;
+	high_z = low_z + depth;
+
+	low_x -= depth;
+	low_z -= depth;
+
+	//Clean up the current values.
 	if(low_x < 0)
 		low_x = 0;
-	if(high_x >= (int)buckets_per_row_)
-		high_x = buckets_per_row_-1;
+
 	if(low_z < 0)
 		low_z = 0;
-	if(high_z >= (int)buckets_per_row_)
+
+	if(high_x >= buckets_per_row_)
+		high_x = buckets_per_row_-1;
+
+	if(high_z >= buckets_per_row_)
 		high_z = buckets_per_row_-1;
 
-	for(int z = low_z; z <= high_z; ++z)
+	//Least run loop on the outside loop on the outside.
+	for(unsigned int y = low_y; y <= high_y; ++y)
 	{
-		for(int x = low_x; x <= high_x; ++x)
-		{
-			bucket->relevant_buckets_.insert(buckets_[x + z*buckets_per_row_]);
+		for(unsigned int x = low_x; x <= high_x; ++x)
+		{	
+			for(unsigned int z = low_z; z <= high_z; ++z)
+			{
+				bucket->relevant_buckets_.insert(buckets_[x + y*buckets_sq + z*buckets_per_row_]);
+			}
 		}
 	}
 }
 
-void universe_container_component::generate_relevant_buckets_3D_(int depth, std::shared_ptr<universe_bucket> bucket)
-{	
-	
-}
-
 size_t universe_container_component::relevant_bucket_(const glm::vec3& pos)
 {
-	if(is_3D_)
-		return relevant_bucket_3D_(pos);
-	else
-		return relevant_bucket_2D_(pos);
+	size_t x = (pos.x + half_map_width_) / bucket_width_;
+	size_t y = (is_3D_) ? (pos.y + half_map_width_) / bucket_width_ : 0;
+	size_t z = (pos.z + half_map_width_) / bucket_width_;
+
+	return x + y*buckets_sq + z*buckets_per_row_;
 }
 
-size_t universe_container_component::relevant_bucket_2D_(const glm::vec3& pos)
+bool universe_container_component::bucketcomp::operator()(const std::shared_ptr<universe_bucket>& lhs, const std::shared_ptr<universe_bucket>& rhs)
 {
-	size_t x = (pos.x + half_map_width_) / buckets_per_row_;
-	size_t z = (pos.z + half_map_width_) / buckets_per_row_;
-
-	return x +  z * buckets_per_row_;
-}
-
-size_t universe_container_component::relevant_bucket_3D_(const glm::vec3& pos)
-{
-	size_t x = (pos.x + half_map_width_) / buckets_per_row_;
-	size_t y = (pos.y + half_map_width_) / buckets_per_row_;
-	size_t z = (pos.z + half_map_width_) / buckets_per_row_;
-
-	return x + y * buckets_per_row_ * buckets_per_row_ + z * buckets_per_row_;
+	return lhs->id_ < rhs->id_;
 }
 
 bool universe_container_component::empty()

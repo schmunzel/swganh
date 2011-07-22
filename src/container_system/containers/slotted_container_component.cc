@@ -11,6 +11,8 @@ using namespace anh::api;
 
 bool slotted_container_component::intrl_insert_(std::shared_ptr<Entity> what, std::shared_ptr<ContainerComponentInterface> old_container)
 {
+	what->parent_intrl_(entity());
+
 	bool ret_val = false;
 	std::set<std::shared_ptr<Entity>> removed_objects;
 	{
@@ -159,6 +161,8 @@ std::shared_ptr<Entity> slotted_container_component::entity_in_slot(std::shared_
 
 bool slotted_container_component::insert(std::shared_ptr<Entity> who, std::shared_ptr<Entity> what, bool force_insertion)
 {
+	what->parent_intrl_(entity());
+
 	bool ret_val = false;
 
 	intrl_lock_.lock_shared();
@@ -279,7 +283,7 @@ bool slotted_container_component::remove(std::shared_ptr<Entity> who, std::share
 			std::for_each(aware_entities_.begin(), aware_entities_.end(), [&] (std::shared_ptr<Entity> e) {
 				
 				//Send Destroy for all Sub Objects
-				what->QueryInterface<ContainerComponentInterface>("Container")->contained_objects(e, [] (std::shared_ptr<Entity> a, std::shared_ptr<Entity> b) {
+				what->QueryInterface<ContainerComponentInterface>("Container")->contained_objects(e, false, [] (std::shared_ptr<Entity> a, std::shared_ptr<Entity> b) {
 					//CALL TO KRONOS' DESTROY GOES HERE
 				}, 0, false);
 				
@@ -316,7 +320,7 @@ bool slotted_container_component::transfer_to(std::shared_ptr<Entity> who, std::
 				else if(!in_recv && in_send)
 				{
 					//Destroy all children for the e
-					what->QueryInterface<ContainerComponentInterface>("Container")->contained_objects(e, [] (std::shared_ptr<Entity> a, std::shared_ptr<Entity> b) {
+					what->QueryInterface<ContainerComponentInterface>("Container")->contained_objects(e, false, [] (std::shared_ptr<Entity> a, std::shared_ptr<Entity> b) {
 						//CALL TO KRONOS' DESTROY GOES HERE
 					}, 0, false);
 
@@ -327,7 +331,7 @@ bool slotted_container_component::transfer_to(std::shared_ptr<Entity> who, std::
 					//CALL TO KRONOS' CREATE GOES HERE
 
 					//Create all children for the e
-					what->QueryInterface<ContainerComponentInterface>("Container")->contained_objects(e, [] (std::shared_ptr<Entity> a, std::shared_ptr<Entity> b) {
+					what->QueryInterface<ContainerComponentInterface>("Container")->contained_objects(e, false, [] (std::shared_ptr<Entity> a, std::shared_ptr<Entity> b) {
 						//CALL TO KRONOS' CREATE GOES HERE
 					}, 0, true);
 				}
