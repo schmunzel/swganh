@@ -27,20 +27,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef MOD_ANH_TRANSFORM_TRANFORM_COMPONENT_H
 #define MOD_ANH_TRANSFORM_TRANFORM_COMPONENT_H
 
-#include <api/components/transform_component_interface.h>
-#include <api/region_interface.h>
-#include <mod_anh_transform/transform_db_mapper.h>
-#include <anh/module_manager/module_main.h>
+#include "transform_component_interface.h"
+#include <swganh/regions/region_interface.h>
+#include "transform_db_mapper.h"
 #include <boost/thread/mutex.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <glm/glm.hpp>
 #include <set>
 
-using namespace anh::component;
-
+namespace swganh {
 namespace transform {
 
-class API TransformComponent : public anh::api::components::TransformComponentInterface {
+class TransformComponent : public TransformComponentInterface {
 public:
     friend class TransformDBMapper;
     TransformComponent();
@@ -70,12 +68,12 @@ public:
     void move_back(const float& distance);
     float rotation_angle();
 
-	void insert_region(std::shared_ptr<container_system::region_interface> region);
-	void remove_region(std::shared_ptr<container_system::region_interface> region);
-	std::set<std::shared_ptr<container_system::region_interface>> regions();
+	void insert_region(std::shared_ptr<swganh::regions::RegionInterface> region);
+	void remove_region(std::shared_ptr<swganh::regions::RegionInterface> region);
+	std::set<std::shared_ptr<swganh::regions::RegionInterface>> regions();
 
 private:
-	std::set<std::shared_ptr<container_system::region_interface>> regions_;
+	std::set<std::shared_ptr<swganh::regions::RegionInterface>> regions_;
 
     glm::vec3 position_;
     glm::quat rotation_;
@@ -85,4 +83,5 @@ private:
 };
 
 } // transform
+} // swganh
 #endif //MOD_ANH_TRANSFORM_TRANFORM_COMPONENT_H

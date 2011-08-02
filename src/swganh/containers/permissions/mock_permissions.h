@@ -2,12 +2,12 @@
 #define MOCK_PERMISSIONS_H
 
 #include <gmock/gmock.h>
-#include <api/container_permissions_interface.h>
+#include "container_permissions_interface.h"
 
 namespace 
 {
 
-class MockPermissions : public anh::api::ContainerPermissionsInterface
+class MockPermissions : public swganh::containers::ContainerPermissionsInterface
 {
 public:
 	
@@ -40,7 +40,7 @@ public:
 private:
 };
 
-class FullPermissions : public anh::api::ContainerPermissionsInterface
+class FullPermissions : public swganh::containers::ContainerPermissionsInterface
 {
 public:
 	virtual bool can_view(std::shared_ptr<anh::component::Entity> who) { return true; }

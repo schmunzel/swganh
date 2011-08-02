@@ -105,7 +105,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
 ## project libraries
 add_subdirectory(anh)
-add_subdirectory(container_system)
 
 ## project plugins
 add_subdirectory(login)
