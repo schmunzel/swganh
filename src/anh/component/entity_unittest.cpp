@@ -68,11 +68,11 @@ TEST_F(EntityTests, NoComponentsAttachedByDefault)
 /// an entity holds.
 TEST_F(EntityTests, CanAttachDetachComponent)
 {
-	Entity entity(entity_id_);
+	std::shared_ptr<Entity> entity = std::make_shared<Entity>(entity_id_);
 	std::shared_ptr<MockComponent> component(new MockComponent());
 
 	// Setup Expectations
-	EXPECT_CALL(*component, set_entity(entity.shared_from_this()))
+	EXPECT_CALL(*component, set_entity(_))
 		.Times(1);
 
 	EXPECT_CALL(*component, OnAttach())
@@ -82,19 +82,19 @@ TEST_F(EntityTests, CanAttachDetachComponent)
 		.Times(1);
 
 	// Attach
-	entity.AttachComponent(component);
-	EXPECT_TRUE(entity.HasInterface("Mock"));
+	entity->AttachComponent(component);
+	EXPECT_TRUE(entity->HasInterface("Mock"));
 
 	// Detach
-	entity.DetachComponent("Mock");
-	EXPECT_FALSE(entity.HasInterface("Mock"));
+	entity->DetachComponent("Mock");
+	EXPECT_FALSE(entity->HasInterface("Mock"));
 }
 
 /// Varifies the HandleMessage function is called on each component when the BroadcastMessage
 /// function is called.
 TEST_F(EntityTests, CanBroadcastMessage)
 {
-	Entity entity(entity_id_);
+	std::shared_ptr<Entity> entity = std::make_shared<Entity>(entity_id_);
 	std::shared_ptr<NiceMock<MockComponent>> component(new NiceMock<MockComponent>());
 	MessagePtr message(new SimpleMessage("mock_message"));
 
@@ -103,13 +103,13 @@ TEST_F(EntityTests, CanBroadcastMessage)
 		.Times(1);
 
 	// Attach
-	entity.AttachComponent(component);
+	entity->AttachComponent(component);
 
 	// Broadcast
-	entity.BroadcastMessage(message);
+	entity->BroadcastMessage(message);
 
 	// Detach
-	entity.DetachComponent("Mock");
+	entity->DetachComponent("Mock");
 }
 
 /// Attaches a mock component to the test Entity, then varifies that the
@@ -149,7 +149,7 @@ TEST_F(EntityTests, CanQueryInterfaceNullReturn)
 /// attached to an entity when the entity Update function is called.
 TEST_F(EntityTests, CanUpdate)
 {
-	Entity entity(entity_id_);
+	std::shared_ptr<Entity> entity = std::make_shared<Entity>(entity_id_);
 	std::shared_ptr<NiceMock<MockComponent>> component(new NiceMock<MockComponent>());
 
 	// Setup Expectations
@@ -157,18 +157,18 @@ TEST_F(EntityTests, CanUpdate)
 		.Times(1);
 
 	// Attach
-	entity.AttachComponent(component);
+	entity->AttachComponent(component);
 
 	// Update
-	entity.Update(0.0f);
+	entity->Update(0.0f);
 
 	// Detach
-	entity.DetachComponent("Mock");
+	entity->DetachComponent("Mock");
 }
 // verifies the entity calls the Persist function on a attribute mapper on update, if dirty
 TEST_F(EntityTests, CallsDBMapperOnUpdateIfDirty)
 {
-	Entity entity(entity_id_);
+	std::shared_ptr<Entity> entity = std::make_shared<Entity>(entity_id_);
 	std::shared_ptr<NiceMock<MockComponent>> component(new NiceMock<MockComponent>());
 
 	// Setup Expectations
@@ -176,7 +176,7 @@ TEST_F(EntityTests, CallsDBMapperOnUpdateIfDirty)
 		.Times(1);
 
 	// Attach
-	entity.AttachComponent(component);
+	entity->AttachComponent(component);
 
     EXPECT_CALL(*component, dirty())
         .WillOnce(Return(true));
@@ -188,15 +188,15 @@ TEST_F(EntityTests, CallsDBMapperOnUpdateIfDirty)
         .WillRepeatedly(Return(std::shared_ptr<anh::component::AttributeMapperInterface<ComponentInterface>>()));
 
 	// Update
-	entity.Update(0.0f);
+	entity->Update(0.0f);
 
 	// Detach
-	entity.DetachComponent("Mock");
+	entity->DetachComponent("Mock");
 }
 // verifies the entity wont call the Persist function on a attribute mapper on update, if NOT dirty
 TEST_F(EntityTests, DoesntCallsAttributeMapperOnUpdateIfNotDirty)
 {
-	Entity entity(entity_id_);
+	std::shared_ptr<Entity> entity = std::make_shared<Entity>(entity_id_);
 	std::shared_ptr<NiceMock<MockComponent>> component(new NiceMock<MockComponent>());
 
 	// Setup Expectations
@@ -204,7 +204,7 @@ TEST_F(EntityTests, DoesntCallsAttributeMapperOnUpdateIfNotDirty)
 		.Times(1);
 
 	// Attach
-	entity.AttachComponent(component);
+	entity->AttachComponent(component);
 
     EXPECT_CALL(*component, dirty())
         .WillOnce(Return(false));
@@ -213,10 +213,10 @@ TEST_F(EntityTests, DoesntCallsAttributeMapperOnUpdateIfNotDirty)
         .Times(0);
 
 	// Update
-	entity.Update(0.0f);
+	entity->Update(0.0f);
 
 	// Detach
-	entity.DetachComponent("Mock");
+	entity->DetachComponent("Mock");
 }
 
 /*****************************************************************************/

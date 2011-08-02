@@ -24,24 +24,19 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ---------------------------------------------------------------------------------------
 */
-#include <mod_anh_transform/transform_component.h>
-#include <api/component_main.h>
-#include <api/components/container_component_interface.h>
+#include "transform_component.h"
+#include <anh/component/entity.h>
+#include <swganh/containers/container_component_interface.h>
 #include <iostream>
 #include <glm/gtc/matrix_transform.hpp>
-#include "main.h"
 
 using namespace std;
-using namespace anh::api;
-using namespace anh::api::components;
+
+namespace swganh {
+namespace transform {
 
 // statics
 std::shared_ptr<NullTransformComponent> TransformComponentInterface::NullComponent = std::make_shared<NullTransformComponent>();
-std::shared_ptr<NullContainerComponent> ContainerComponentInterface::NullComponent = std::make_shared<NullContainerComponent>();
-std::shared_ptr<NullContainerPermission> NullContainerComponent::null_permissions = std::make_shared<NullContainerPermission>();
-
-namespace transform {
-
 
 TransformComponent::TransformComponent()
 : TransformComponentInterface("Anh.Transform")
@@ -83,7 +78,7 @@ void TransformComponent::rotate(const float& degrees)
 		rot = rotation_;
 		loc = position_;
 	}
-	entity()->parent()->QueryInterface<anh::api::components::ContainerComponentInterface>("Container")->state_update(entity(), loc, loc,  rot);
+	entity()->parent()->QueryInterface<swganh::containers::ContainerComponentInterface>("Container")->state_update(entity(), loc, loc,  rot);
 }
 
 void TransformComponent::rotate_left(const float& degrees) 
@@ -120,7 +115,7 @@ void TransformComponent::face(const glm::vec3& target_position)
 		loc = position_;
 	}
 
-	entity()->parent()->QueryInterface<anh::api::components::ContainerComponentInterface>("Container")->state_update(entity(), loc, loc, rot);
+	entity()->parent()->QueryInterface<swganh::containers::ContainerComponentInterface>("Container")->state_update(entity(), loc, loc, rot);
 }
 
 void TransformComponent::move(const glm::quat& rotation, float distance) 
@@ -143,7 +138,7 @@ void TransformComponent::move(const glm::quat& rotation, float distance)
 		rot = rotation_;
 	}
 
-	entity()->parent()->QueryInterface<anh::api::components::ContainerComponentInterface>("Container")->state_update(entity(), old_pos, new_pos, rot);
+	entity()->parent()->QueryInterface<swganh::containers::ContainerComponentInterface>("Container")->state_update(entity(), old_pos, new_pos, rot);
 }
 
 void TransformComponent::move(float distance) 
@@ -166,7 +161,7 @@ void TransformComponent::move(float distance)
 		rot = rotation_;
 	}
 
-	entity()->parent()->QueryInterface<anh::api::components::ContainerComponentInterface>("Container")->state_update(entity(), old_pos, new_pos, rot);
+	entity()->parent()->QueryInterface<swganh::containers::ContainerComponentInterface>("Container")->state_update(entity(), old_pos, new_pos, rot);
 }
 
 void TransformComponent::move_forward(const float& distance) 
@@ -194,19 +189,19 @@ float TransformComponent::rotation_angle() {
     return glm::angle(tmp);
 }
 
-void TransformComponent::insert_region(std::shared_ptr<container_system::region_interface> region)
+void TransformComponent::insert_region(std::shared_ptr<swganh::regions::RegionInterface> region)
 {
 	boost::unique_lock<boost::mutex> lock(lock_);
 	regions_.insert(region);
 }
 
-void TransformComponent::remove_region(std::shared_ptr<container_system::region_interface> region)
+void TransformComponent::remove_region(std::shared_ptr<swganh::regions::RegionInterface> region)
 {
 	boost::unique_lock<boost::mutex> lock(lock_);
 	regions_.erase(region);
 }
 
-std::set<std::shared_ptr<container_system::region_interface>> TransformComponent::regions()
+std::set<std::shared_ptr<swganh::regions::RegionInterface>> TransformComponent::regions()
 {
 	boost::unique_lock<boost::mutex> lock(lock_);
 	return regions_;
@@ -223,7 +218,7 @@ void TransformComponent::position(const glm::vec3& position)
 		rot = rotation_;
 	}
 
-	entity()->parent()->QueryInterface<anh::api::components::ContainerComponentInterface>("Container")->state_update(entity(), old_pos, position, rot);
+	entity()->parent()->QueryInterface<swganh::containers::ContainerComponentInterface>("Container")->state_update(entity(), old_pos, position, rot);
 }
 
 void TransformComponent::position(const float x, const float y, const float z)
@@ -239,7 +234,7 @@ void TransformComponent::position(const float x, const float y, const float z)
 		rot = rotation_;
 	}
 
-	entity()->parent()->QueryInterface<anh::api::components::ContainerComponentInterface>("Container")->state_update(entity(), old_pos, glm::vec3(x, y, z), rot);
+	entity()->parent()->QueryInterface<swganh::containers::ContainerComponentInterface>("Container")->state_update(entity(), old_pos, glm::vec3(x, y, z), rot);
 }
 
 glm::vec3 TransformComponent::position()
@@ -257,7 +252,7 @@ void TransformComponent::rotation(const glm::quat& rotation)
 		pos = position_;
 	}
 
-	entity()->parent()->QueryInterface<anh::api::components::ContainerComponentInterface>("Container")->state_update(entity(), pos, pos, rotation);
+	entity()->parent()->QueryInterface<swganh::containers::ContainerComponentInterface>("Container")->state_update(entity(), pos, pos, rotation);
 }
 
 void TransformComponent::rotation(const float x, const float y, const float z, const float w)
@@ -273,7 +268,7 @@ void TransformComponent::rotation(const float x, const float y, const float z, c
 		pos = position_;
 	}
 
-	entity()->parent()->QueryInterface<anh::api::components::ContainerComponentInterface>("Container")->state_update(entity(), pos, pos, glm::quat(x, y, z, w));
+	entity()->parent()->QueryInterface<swganh::containers::ContainerComponentInterface>("Container")->state_update(entity(), pos, pos, glm::quat(x, y, z, w));
 }
 
 glm::quat TransformComponent::rotation()
@@ -294,4 +289,5 @@ const float TransformComponent::speed()
 	return speed_;
 }
 
-} // namespace zone
+}
+}

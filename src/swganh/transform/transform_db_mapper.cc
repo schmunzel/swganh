@@ -17,9 +17,10 @@
  along with MMOServer.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "transform_db_mapper.h"
+#include "transform_component.h"
+
+#include <anh/component/entity.h>
 #include <anh/database/database_manager.h>
-#include <mod_anh_transform/transform_component.h>
-#include "main.h"
 #include <cppconn/connection.h>
 #include <cppconn/resultset.h>
 #include <cppconn/statement.h>
@@ -27,9 +28,10 @@
 #include <cppconn/sqlstring.h>
 
 using namespace std;
-using namespace anh::api::components;
 
+namespace swganh {
 namespace transform {
+
 TransformDBMapper::TransformDBMapper(std::shared_ptr<anh::database::DatabaseManagerInterface> db_manager)
     : db_manager_(db_manager)
 {
@@ -56,7 +58,7 @@ void TransformDBMapper::Persist(std::shared_ptr<TransformComponentInterface> com
 		prepared->executeQuery();
     }
 }
-void TransformDBMapper::Populate(std::shared_ptr<anh::api::components::TransformComponentInterface> component)
+void TransformDBMapper::Populate(std::shared_ptr<TransformComponentInterface> component)
 {
     auto conn = db_manager_->getConnection("galaxy");
     sql::SQLString query_string("select * from transform where entity_id = ?");
@@ -86,3 +88,4 @@ std::shared_ptr<TransformComponentInterface> TransformDBMapper::query_result(uin
 }
 
 } // transform
+}

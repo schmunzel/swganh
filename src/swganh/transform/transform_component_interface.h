@@ -34,21 +34,21 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <glm/gtx/quaternion.hpp>
 #include <glm/glm.hpp>
 
-using namespace anh::component;
+namespace swganh { 
 
-namespace container_system
+namespace regions
 {
-	class region_interface;
+	class RegionInterface;
 };
 
-namespace anh {namespace api { namespace components {
+namespace transform {
 
 class NullTransformComponent;
 
-class TransformComponentInterface : public BaseComponent {
+class TransformComponentInterface : public anh::component::BaseComponent {
     public:
-    TransformComponentInterface(const ComponentType& type)
-        : BaseComponent("Transform", type) { }
+    TransformComponentInterface(const anh::component::ComponentType& type)
+        : anh::component::BaseComponent("Transform", type) { }
 
     virtual glm::vec3 position() = 0;
     virtual void position(const float x, const float y, const float z) = 0;
@@ -66,9 +66,9 @@ class TransformComponentInterface : public BaseComponent {
     virtual void move_back(const float& distance) = 0;
     virtual float rotation_angle() = 0;
 
-	virtual void insert_region(std::shared_ptr<container_system::region_interface> region) = 0;
-	virtual void remove_region(std::shared_ptr<container_system::region_interface> region) = 0;
-	virtual std::set<std::shared_ptr<container_system::region_interface>> regions() = 0;
+	virtual void insert_region(std::shared_ptr<swganh::regions::RegionInterface> region) = 0;
+	virtual void remove_region(std::shared_ptr<swganh::regions::RegionInterface> region) = 0;
+	virtual std::set<std::shared_ptr<swganh::regions::RegionInterface>> regions() = 0;
 
     static std::shared_ptr<NullTransformComponent> NullComponent;
 };
@@ -91,15 +91,14 @@ public:
     float rotation_angle() { return 0.0f; }
     const float speed() { return speed_; }
 
-	void insert_region(std::shared_ptr<container_system::region_interface> region) {}
-	void remove_region(std::shared_ptr<container_system::region_interface> region) {}
-	std::set<std::shared_ptr<container_system::region_interface>> regions() {return std::set<std::shared_ptr<container_system::region_interface>>();}
+	void insert_region(std::shared_ptr<swganh::regions::RegionInterface> region) {}
+	void remove_region(std::shared_ptr<swganh::regions::RegionInterface> region) {}
+	std::set<std::shared_ptr<swganh::regions::RegionInterface>> regions() {return std::set<std::shared_ptr<swganh::regions::RegionInterface>>();}
 private:
     glm::vec3 position_;
     glm::quat rotation_;
     float speed_;
 };
-} // components
-} // api
-} // anh
+} //transform
+} //swganh
 #endif //ANH_API_COMPONENTS_TRANSFORM_COMPONENT_INTERFACE_H
