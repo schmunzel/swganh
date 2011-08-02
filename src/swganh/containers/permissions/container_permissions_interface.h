@@ -11,8 +11,11 @@ namespace component
 {
 	class Entity;
 };
+};
 
-namespace api
+namespace swganh
+{
+namespace containers
 {
 class ContainerPermissionsInterface
 {
