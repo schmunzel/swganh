@@ -105,6 +105,7 @@ add_subdirectory(anh)
 add_subdirectory(login)
 add_subdirectory(connection)
 add_subdirectory(character)
+add_subdirectory(baseline)
 
 ## project executables
 add_subdirectory(swganh)
