@@ -26,6 +26,11 @@
 #include <glm/gtx/quaternion.hpp>
 
 namespace swganh {
+namespace connection {
+    struct ConnectionClient;
+}} // namespace swganh::connection
+
+namespace swganh {
 namespace character {
 
 struct CharacterData {
@@ -45,6 +50,7 @@ struct CharacterLoginData {
     std::string terrain_map;
     std::string race_template;
     std::string shared_race_template;
+    std::shared_ptr<swganh::connection::ConnectionClient> client;
 };
 #define appearance_size 0x255
 #define hair_customization_size 0x71

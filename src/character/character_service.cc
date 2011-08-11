@@ -43,6 +43,7 @@
 
 #include "anh/app/kernel_interface.h"
 #include "anh/database/database_manager.h"
+#include "anh/event_dispatcher/event_dispatcher.h"
 
 #include "anh/network/soe/session.h"
 #include "anh/network/soe/server_interface.h"
@@ -455,8 +456,9 @@ std::string CharacterService::setCharacterCreateErrorCode_(uint32_t error_code)
 
 void CharacterService::HandleSelectCharacter_(std::shared_ptr<ConnectionClient> client, const SelectCharacter& message) {    
     swganh::character::CharacterLoginData character = GetLoginCharacter(message.character_id, client->account_id);
+    character.client = client;
 
-    // @TODO: Trigger an event here with the character data.
+    kernel()->GetEventDispatcher()->triggerAsync(make_shared_event("SelectCharacterLogin", character));
 
     CmdStartScene start_scene;
     // @TODO: Replace with configurable value

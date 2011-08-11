@@ -1,0 +1,5 @@
+<entity type='Player' tags='player'>
+	<component type='transform'>
+		
+	</component>
+</entity>
