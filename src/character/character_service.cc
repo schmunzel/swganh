@@ -459,32 +459,6 @@ void CharacterService::HandleSelectCharacter_(std::shared_ptr<ConnectionClient> 
     character.client = client;
 
     kernel()->GetEventDispatcher()->triggerAsync(make_shared_event("SelectCharacterLogin", character));
-
-    CmdStartScene start_scene;
-    // @TODO: Replace with configurable value
-    start_scene.ignore_layout = 0;
-    start_scene.character_id = character.character_id;
-    start_scene.terrain_map = character.terrain_map;
-    start_scene.position = character.position;
-    start_scene.shared_race_template = "object/creature/player/shared_" + character.race + "_" + character.gender + ".iff";
-    start_scene.galaxy_time = service_directory()->galaxy().GetGalaxyTimeInMilliseconds();
-        
-    client->session->SendMessage(start_scene);
-
-    SceneCreateObjectByCrc scene_object;
-    scene_object.object_id = character.character_id;
-    scene_object.orientation = character.orientation;
-    scene_object.position = character.position;
-    scene_object.object_crc = anh::memcrc(character.race_template);
-    // @TODO: Replace with configurable value
-    scene_object.byte_flag = 0;
-    
-    client->session->SendMessage(scene_object);
-    
-    SceneEndBaselines scene_object_end;
-    scene_object_end.object_id = character.character_id;
-    
-    client->session->SendMessage(scene_object_end);
 }
 
 void CharacterService::HandleClientCreateCharacter_(std::shared_ptr<ConnectionClient> client, const ClientCreateCharacter& message) {

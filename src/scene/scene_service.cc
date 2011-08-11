@@ -161,5 +161,10 @@ bool SceneService::CreateSceneForPlayer(swganh::character::CharacterLoginData ch
     
     character.client->session->SendMessage(scene_object);
 
+    SceneEndBaselines scene_object_end;
+    scene_object_end.object_id = character.character_id;
+    
+    character.client->session->SendMessage(scene_object_end);
+
     return true;
 }

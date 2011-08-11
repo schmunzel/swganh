@@ -60,7 +60,7 @@ extern "C" PLUGIN_API ExitFunc InitializePlugin(shared_ptr<KernelInterface> kern
         }
     };
 
-    kernel->GetPluginManager()->RegisterObject("CharacterService", &registration);
+    kernel->GetPluginManager()->RegisterObject("SceneService", &registration);
 
     return ExitModule;
 }
