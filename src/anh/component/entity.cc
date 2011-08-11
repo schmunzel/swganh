@@ -94,6 +94,11 @@ bool Entity::HasTag(const Tag& tag)
 		return false;
 }
 
+TagSet Entity::Tags()
+{
+	return tags_;
+}
+
 void Entity::Update(const float deltaMilliseconds)
 {
 	std::for_each(components_.begin(), components_.end(), [=](ComponentsMap::value_type& pair) {
@@ -115,6 +120,26 @@ void Entity::BroadcastMessage(Message message)
 	std::for_each(components_.begin(), components_.end(), [=](ComponentsMap::value_type& pair) {
 		pair.second->HandleMessage(message);
 	});
+}
+
+void Entity::add_update(anh::HashString hs, std::uint16_t id)
+{ 
+	updates_.push_back(std::make_pair<anh::HashString, std::uint16_t>(hs, id); 
+
+	if(updates_.size() == 1)
+	{
+		//Send Update Via Event Dispatch
+	}
+}
+	
+void Entity::clear_updates() 
+{ 
+	updates_.clear();
+}
+
+void Entity::clear_updates(Updatables& other) 
+{ 
+	updates_.swap(other);
 }
 
 }

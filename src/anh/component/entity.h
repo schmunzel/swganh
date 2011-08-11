@@ -66,6 +66,7 @@ public:
 	void AddTag(const Tag& tag);
 	void RemoveTag(const Tag& tag);
 	bool HasTag(const Tag& tag);
+	TagSet Tags();
 
 	/**
 	 * Updates each component that is attached to the entity.
@@ -80,14 +81,31 @@ public:
 	const EntityId& id() const { return id_; }
 	const std::string& name() const { return name_; }
 
+	void add_update(anh::HashString hs, std::uint16_t id);
+	void clear_updates();
+	void swap_updates(Updatables& other);
+
 private:
 	typedef std::map<InterfaceType, std::shared_ptr<ComponentInterface>>			ComponentsMap;
 	typedef std::map<InterfaceType, std::shared_ptr<ComponentInterface>>::iterator	ComponentsMapIterator;
+	typedef std::pair<anh::HashString, std::uint16_t> Updatable;
+	
+	struct UpdatableComp 
+	{
+		bool operator() ( Updatable lhs, Updatable rhs) 
+		{
+			return (lhs.first < rhs.first) || ((lhs.first == rhs.first) && lhs.second < rhs.second);
+		}
+	};
+
+	typedef std::set<Updatable, UpdatableComp> Updatables;
 
 	std::string							name_;
 	EntityId							id_;
 	TagSet								tags_;
 	ComponentsMap						components_;
+
+	Updatables							updates_;
 
 };
 

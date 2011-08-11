@@ -11,6 +11,9 @@ namespace baseline {
 
 		baseline_service(std::shared_ptr<anh::app::KernelInterface> kernel);
 
+		virtual void create_group(anh::HashString name, std::function<void(std::shared_ptr<anh::component::Entity>, std::vector<anh::ByteBuffer>&)> functor);
+		virtual void remove_group(anh::HashString name);
+
 		virtual void attach_baseline_delta(anh::HashString name, std::shared_ptr<swganh::baseline::baseline_delta_interface> bdi);
 		virtual void detach_baseline_delta(anh::HashString name);
 
@@ -21,6 +24,7 @@ namespace baseline {
 
 	private:
 		std::map<anh::HashString, std::shared_ptr<swganh::baseline::baseline_delta_interface>> lookup_;
+		std::map<anh::HashString, std::function<void(std::shared_ptr<anh::component::Entity>, std::vector<anh::ByteBuffer>&)>> groups_;
 	};
 };
 
