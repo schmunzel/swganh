@@ -39,6 +39,8 @@ namespace swganh { namespace baseline {
 		virtual anh::ByteBuffer build_baseline(std::shared_ptr<anh::component::Entity> e) = 0;
 		virtual anh::ByteBuffer build_delta(std::shared_ptr<anh::component::Entity> e, Updatables::iterator& itr, Updatables::iterator& absolute_end) = 0;
 
+		virtual bool is_private() = 0;
+
 	protected:
 		enum constants : std::uint32_t
 		{

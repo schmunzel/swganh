@@ -8,7 +8,7 @@ namespace baseline {
 	{
 	public:
 
-		baseline_delta(const char* type, std::uint8_t id);
+		baseline_delta(const char* type, std::uint8_t id, bool is_private);
 
 		virtual void attach_updatable(std::uint16_t id, swganh::baseline::UpdatableFunctor uf);
 		virtual void detach_updatable(std::uint16_t id);
@@ -19,12 +19,17 @@ namespace baseline {
 												swganh::baseline::Updatables::iterator& itr, 
 												swganh::baseline::Updatables::iterator& absolute_end
 											);
+
+		virtual bool is_private() { return is_private_; }
+
 	private:
 
 		std::map<std::uint16_t, swganh::baseline::UpdatableFunctor> updatables_;
 
 		std::uint32_t type_;
 		std::uint8_t id_;
+
+		bool is_private_;
 	};
 };
 

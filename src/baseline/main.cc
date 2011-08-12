@@ -38,6 +38,8 @@
 #include "baseline_service.h"
 #include "baseline_delta.h"
 
+#include "baseline_deltas/creature.h"
+
 using namespace anh;
 using namespace component;
 using namespace app;
@@ -53,13 +55,9 @@ extern "C" PLUGIN_API void ExitModule()
 
 extern "C" PLUGIN_API ExitFunc InitializePlugin(shared_ptr<KernelInterface> kernel) 
 {
-	baseline::baseline_service bs(kernel);
-	auto bd = std::make_shared<baseline::baseline_delta>("CREO", 4);
-	bs.attach_baseline_delta("CREO4", bd);
-	
-	bd->attach_updatable(0, [] (std::shared_ptr<Entity> e, ByteBuffer& b) {
-		b.write(0);
-	});
+	auto serv = std::make_shared<baseline::baseline_service>(kernel);
+
+	baseline::baseline_deltas::init_creature(serv);
 
     return ExitModule;
 }

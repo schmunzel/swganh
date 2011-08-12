@@ -5,8 +5,8 @@ using namespace baseline;
 using namespace swganh::baseline;
 using namespace anh::component;
 
-baseline_delta::baseline_delta(const char* type, std::uint8_t id)
-	: id_(id)
+baseline_delta::baseline_delta(const char* type, std::uint8_t id, bool is_private)
+	: id_(id), is_private_(is_private)
 {
 	memcpy(&type_, type, 4);
 }

@@ -34,7 +34,7 @@ void baseline_service::detach_baseline_delta(anh::HashString name)
 void baseline_service::send_baselines(std::shared_ptr<Entity> e, std::list<std::shared_ptr<anh::component::Entity>> recieving_entities)
 {
 	//Generate Relevant Baselines
-	std::vector<anh::ByteBuffer> generated_baselines;
+	std::vector<std::pair<bool, anh::ByteBuffer>> generated_baselines;
 
 	std::set<anh::HashString> tags = e->Tags();
 	auto end = tags.end();
@@ -51,14 +51,17 @@ void baseline_service::send_baselines(std::shared_ptr<Entity> e, std::list<std::
 	if(generated_baselines.size() > 0)
 	{
 		//Send Baselines to recieving entities
-		std::vector<anh::ByteBuffer>::iterator base_itr;
-		std::vector<anh::ByteBuffer>::iterator base_end = generated_baselines.end();
+		std::vector<std::pair<bool, anh::ByteBuffer>>::iterator base_itr;
+		std::vector<std::pair<bool, anh::ByteBuffer>>::iterator base_end = generated_baselines.end();
 
 		std::list<std::shared_ptr<anh::component::Entity>>::iterator recv_itr;
 		std::list<std::shared_ptr<anh::component::Entity>>::iterator recv_end = recieving_entities.end();
 		for(recv_itr = recieving_entities.begin(); recv_itr != recv_end; ++recv_itr) {
 			for(base_itr = generated_baselines.begin(); base_itr != base_end; ++base_itr) {
-				//Send
+				if(!base_itr->first || (base_itr->first && *recv_itr == e))
+				{
+					//Send
+				}
 			}
 		}
 	}
@@ -71,7 +74,7 @@ void baseline_service::send_baselines(std::shared_ptr<Entity> e, std::list<std::
 void baseline_service::send_deltas(std::shared_ptr<Entity> e, std::list<std::shared_ptr<anh::component::Entity>> recieving_entities)
 {
 	//Generate Relevant Deltas
-	std::vector<anh::ByteBuffer> generated_deltas;
+	std::vector<std::pair<bool, anh::ByteBuffer>> generated_deltas;
 
 	swganh::baseline::Updatables updates;
 	e->swap_updates(updates);
@@ -84,7 +87,7 @@ void baseline_service::send_deltas(std::shared_ptr<Entity> e, std::list<std::sha
 		auto search = lookup_.find(itr->first);
 		if(search != lookup_.end()) 
 		{
-			generated_deltas.push_back(search->second->build_delta(e, itr, end));
+			generated_deltas.push_back(std::make_pair<bool, anh::ByteBuffer>(search->second->is_private(), search->second->build_delta(e, itr, end)));
 		} 
 		else 
 		{
@@ -94,14 +97,17 @@ void baseline_service::send_deltas(std::shared_ptr<Entity> e, std::list<std::sha
 	}
 
 	//Send Deltas to recieving entities
-	std::vector<anh::ByteBuffer>::iterator base_itr;
-	std::vector<anh::ByteBuffer>::iterator base_end = generated_deltas.end();
+	std::vector<std::pair<bool, anh::ByteBuffer>>::iterator base_itr;
+	std::vector<std::pair<bool, anh::ByteBuffer>>::iterator base_end = generated_deltas.end();
 
 	std::list<std::shared_ptr<anh::component::Entity>>::iterator recv_itr;
 	std::list<std::shared_ptr<anh::component::Entity>>::iterator recv_end = recieving_entities.end();
 	for(recv_itr = recieving_entities.begin(); recv_itr != recv_end; ++recv_itr) {
 		for(base_itr = generated_deltas.begin(); base_itr != base_end; ++base_itr) {
-			//Send
+			if(!base_itr->first || (base_itr->first && *recv_itr == e))
+			{
+				//Send
+			}
 		}
 	}
 
@@ -110,7 +116,7 @@ void baseline_service::send_deltas(std::shared_ptr<Entity> e, std::list<std::sha
 void baseline_service::send_deltas(std::shared_ptr<Entity> e)
 {
 	//Generate Relevant Deltas
-	std::vector<anh::ByteBuffer> generated_deltas;
+	std::vector<std::pair<bool, anh::ByteBuffer>> generated_deltas;
 
 	swganh::baseline::Updatables updates;
 	e->swap_updates(updates);
@@ -123,7 +129,7 @@ void baseline_service::send_deltas(std::shared_ptr<Entity> e)
 		auto search = lookup_.find(itr->first);
 		if(search != lookup_.end())
 		{
-			generated_deltas.push_back(search->second->build_delta(e, itr, end));
+			generated_deltas.push_back(std::make_pair<bool, anh::ByteBuffer>(search->second->is_private(), search->second->build_delta(e, itr, end)));
 		}
 		else
 		{
@@ -133,8 +139,8 @@ void baseline_service::send_deltas(std::shared_ptr<Entity> e)
 	}
 
 	//Send Deltas to recieving entities
-	std::vector<anh::ByteBuffer>::iterator base_itr;
-	std::vector<anh::ByteBuffer>::iterator base_end = generated_deltas.end();
+	std::vector<std::pair<bool, anh::ByteBuffer>>::iterator base_itr;
+	std::vector<std::pair<bool, anh::ByteBuffer>>::iterator base_end = generated_deltas.end();
 }
 
 anh::service::ServiceDescription baseline_service::GetServiceDescription()
@@ -176,12 +182,21 @@ void baseline_service::subscribe()
 	});
 }
 
-void baseline_service::create_group(anh::HashString name, std::function<void(std::shared_ptr<anh::component::Entity>, std::vector<anh::ByteBuffer>&)> functor)
+void baseline_service::create_group(anh::HashString name, swganh::baseline::GroupFunctor functor)
 {
-	groups_.insert(std::make_pair<anh::HashString, std::function<void(std::shared_ptr<anh::component::Entity>, std::vector<anh::ByteBuffer>&)>>(name, functor));
+	groups_.insert(std::make_pair<anh::HashString, swganh::baseline::GroupFunctor>(name, functor));
 }
 
 void baseline_service::remove_group(anh::HashString name)
 {
 	groups_.erase(name);
+}
+
+std::shared_ptr<swganh::baseline::baseline_delta_interface> baseline_service::get_baseline_delta(anh::HashString name)
+{
+	auto itr = lookup_.find(name);
+	if(itr != lookup_.end()) {
+		return itr->second;
+	}
+	return nullptr;
 }
