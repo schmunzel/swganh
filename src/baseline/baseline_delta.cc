@@ -1,4 +1,5 @@
 #include "baseline_delta.h"
+#include <anh/component/entity.h>
 
 using namespace baseline;
 using namespace swganh::baseline;
@@ -7,7 +8,7 @@ using namespace anh::component;
 baseline_delta::baseline_delta(const char* type, std::uint8_t id)
 	: id_(id)
 {
-	memcpy(type_, type, 4);
+	memcpy(&type_, type, 4);
 }
 
 void baseline_delta::attach_updatable(std::uint16_t id, UpdatableFunctor uf)
@@ -42,7 +43,7 @@ anh::ByteBuffer baseline_delta::build_baseline(std::shared_ptr<Entity> e)
 	return b;
 }
 
-anh::ByteBuffer baseline_delta::build_delta(std::shared_ptr<Entity> e, Updatables::iterator& itr, Updatables::iterator& absolute_end)
+anh::ByteBuffer baseline_delta::build_delta(std::shared_ptr<Entity> e, swganh::baseline::Updatables::iterator& itr, swganh::baseline::Updatables::iterator& absolute_end)
 {
 	anh::ByteBuffer b;
 
@@ -55,7 +56,7 @@ anh::ByteBuffer baseline_delta::build_delta(std::shared_ptr<Entity> e, Updatable
 	b.write<uint32_t>(0xCAFEBABE); //Size Placeholder
 	b.write<uint16_t>(0xABCD); //Count Placeholder
 
-	std::uint16_t count;
+	std::uint16_t count = 0;
 	anh::HashString our_hash = itr->first;
 	while(itr != absolute_end)
 	{

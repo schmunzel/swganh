@@ -16,6 +16,9 @@ namespace anh { namespace component {
 namespace swganh { namespace baseline {
 	
 	typedef std::function<void(std::shared_ptr<anh::component::Entity> e, anh::ByteBuffer& b)> UpdatableFunctor;
+	
+	#ifndef UPDATABLES
+	#define UPDATABLES
 	typedef std::pair<anh::HashString, std::uint16_t> Updatable;
 
 	struct UpdatableComp {
@@ -25,6 +28,7 @@ namespace swganh { namespace baseline {
 	};
 
 	typedef std::set<Updatable, UpdatableComp> Updatables;
+	#endif
 
 	class baseline_delta_interface
 	{

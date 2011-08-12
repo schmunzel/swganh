@@ -1,7 +1,13 @@
 #include "baseline_service.h"
 
+
 #include <swganh/baseline/baseline_delta_interface.h>
+#include <swganh/baseline/baseline_event.h>
+#include <swganh/baseline/delta_event.h>
+
+#include <anh/app/kernel_interface.h>
 #include <anh/component/entity.h>
+#include <anh/event_dispatcher/event_dispatcher.h>
 
 #include <glog/logging.h>
 #include <vector>
@@ -25,7 +31,7 @@ void baseline_service::detach_baseline_delta(anh::HashString name)
 	lookup_.erase(name);
 }
 
-void baseline_service::send_baselines(std::shared_ptr<Entity> e, std::list<std::uint64_t> recieving_entities)
+void baseline_service::send_baselines(std::shared_ptr<Entity> e, std::list<std::shared_ptr<anh::component::Entity>> recieving_entities)
 {
 	//Generate Relevant Baselines
 	std::vector<anh::ByteBuffer> generated_baselines;
@@ -42,16 +48,16 @@ void baseline_service::send_baselines(std::shared_ptr<Entity> e, std::list<std::
 		}
 	}
 
-	if(generated_baselines > 0)
+	if(generated_baselines.size() > 0)
 	{
 		//Send Baselines to recieving entities
 		std::vector<anh::ByteBuffer>::iterator base_itr;
 		std::vector<anh::ByteBuffer>::iterator base_end = generated_baselines.end();
 
-		std::list<std::uint64_t>::iterator recv_iter;
-		std::list<std::uint64_t>::iterator recv_end = recieving_entities.end();
-		for(recv_iter = recieving_entities.begin(); recv_iter != recv_end; ++recv_iter) {
-			for(base_iter = generated_baselines.begin(); base_iter != base_end; ++base_itr) {
+		std::list<std::shared_ptr<anh::component::Entity>>::iterator recv_itr;
+		std::list<std::shared_ptr<anh::component::Entity>>::iterator recv_end = recieving_entities.end();
+		for(recv_itr = recieving_entities.begin(); recv_itr != recv_end; ++recv_itr) {
+			for(base_itr = generated_baselines.begin(); base_itr != base_end; ++base_itr) {
 				//Send
 			}
 		}
@@ -62,7 +68,7 @@ void baseline_service::send_baselines(std::shared_ptr<Entity> e, std::list<std::
 	}
 }
 
-void baseline_service::send_deltas(std::shared_ptr<Entity> e, std::list<std::uint64_t> recieving_entities)
+void baseline_service::send_deltas(std::shared_ptr<Entity> e, std::list<std::shared_ptr<anh::component::Entity>> recieving_entities)
 {
 	//Generate Relevant Deltas
 	std::vector<anh::ByteBuffer> generated_deltas;
@@ -91,10 +97,10 @@ void baseline_service::send_deltas(std::shared_ptr<Entity> e, std::list<std::uin
 	std::vector<anh::ByteBuffer>::iterator base_itr;
 	std::vector<anh::ByteBuffer>::iterator base_end = generated_deltas.end();
 
-	std::list<std::uint64_t>::iterator recv_iter;
-	std::list<std::uint64_t>::iterator recv_end = recieving_entities.end();
-	for(recv_iter = recieving_entities.begin(); recv_iter != recv_end; ++recv_iter) {
-		for(base_iter = generated_deltas.begin(); base_iter != base_end; ++base_itr) {
+	std::list<std::shared_ptr<anh::component::Entity>>::iterator recv_itr;
+	std::list<std::shared_ptr<anh::component::Entity>>::iterator recv_end = recieving_entities.end();
+	for(recv_itr = recieving_entities.begin(); recv_itr != recv_end; ++recv_itr) {
+		for(base_itr = generated_deltas.begin(); base_itr != base_end; ++base_itr) {
 			//Send
 		}
 	}
@@ -129,4 +135,53 @@ void baseline_service::send_deltas(std::shared_ptr<Entity> e)
 	//Send Deltas to recieving entities
 	std::vector<anh::ByteBuffer>::iterator base_itr;
 	std::vector<anh::ByteBuffer>::iterator base_end = generated_deltas.end();
+}
+
+anh::service::ServiceDescription baseline_service::GetServiceDescription()
+{
+	anh::service::ServiceDescription service_description(
+        "ANH Baseline/Delta Service",
+        "baseline",
+        "0.1",
+        "127.0.0.1", 
+        0, 
+        0, 
+        0);
+
+	return service_description;
+}
+
+void baseline_service::DescribeConfigOptions(boost::program_options::options_description& description) {}
+
+void baseline_service::subscribe()
+{
+	kernel()->GetEventDispatcher()->subscribe(anh::HashString("BaselineEvent"), [this] (std::shared_ptr<anh::event_dispatcher::EventInterface> e) -> bool {
+		auto actual_event = std::dynamic_pointer_cast<swganh::baseline::BaselineEvent, anh::event_dispatcher::EventInterface>(e);
+		if(actual_event->entity != nullptr)
+		{
+			send_baselines(actual_event->entity, actual_event->receiving_entities);
+			return true;
+		}
+		return false;
+	});
+
+	kernel()->GetEventDispatcher()->subscribe(anh::HashString("DeltaEvent"), [this] (std::shared_ptr<anh::event_dispatcher::EventInterface> e) -> bool {
+		auto actual_event = std::dynamic_pointer_cast<swganh::baseline::DeltaEvent, anh::event_dispatcher::EventInterface>(e);
+		if(actual_event->entity != nullptr)
+		{
+			send_deltas(actual_event->entity);
+			return true;
+		}
+		return false;
+	});
+}
+
+void baseline_service::create_group(anh::HashString name, std::function<void(std::shared_ptr<anh::component::Entity>, std::vector<anh::ByteBuffer>&)> functor)
+{
+	groups_.insert(std::make_pair<anh::HashString, std::function<void(std::shared_ptr<anh::component::Entity>, std::vector<anh::ByteBuffer>&)>>(name, functor));
+}
+
+void baseline_service::remove_group(anh::HashString name)
+{
+	groups_.erase(name);
 }

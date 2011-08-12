@@ -21,7 +21,9 @@
 #define LIBANH_COMPONENT_ENTITY_MANAGER_H_
 
 #include <map>
+#include <memory>
 #include <anh/component/entity.h>
+#include <anh/event_dispatcher/event_dispatcher_interface.h>
 
 namespace anh {
 namespace component {
@@ -91,7 +93,7 @@ public:
 	 *
 	 * @param deltasMilliseconds The number of milliseconds between the last update.
 	 */
-	void Update(const float deltaMilliseconds);
+	void Update(const float deltaMilliseconds, std::shared_ptr<anh::event_dispatcher::EventDispatcherInterface> dispatch);
 
 protected:
 private:

@@ -28,6 +28,13 @@
 #include "anh/plugin/plugin_manager.h"
 #include "anh/service/service_manager.h"
 
+#include <cppconn/connection.h>
+#include <cppconn/exception.h>
+#include <cppconn/resultset.h>
+#include <cppconn/statement.h>
+#include <cppconn/prepared_statement.h>
+#include <cppconn/sqlstring.h>
+
 #include "baseline_service.h"
 #include "baseline_delta.h"
 
@@ -46,7 +53,7 @@ extern "C" PLUGIN_API void ExitModule()
 
 extern "C" PLUGIN_API ExitFunc InitializePlugin(shared_ptr<KernelInterface> kernel) 
 {
-	baseline::baseline_service bs;
+	baseline::baseline_service bs(kernel);
 	auto bd = std::make_shared<baseline::baseline_delta>("CREO", 4);
 	bs.attach_baseline_delta("CREO4", bd);
 	

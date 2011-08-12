@@ -17,11 +17,18 @@ namespace baseline {
 		virtual void attach_baseline_delta(anh::HashString name, std::shared_ptr<swganh::baseline::baseline_delta_interface> bdi);
 		virtual void detach_baseline_delta(anh::HashString name);
 
-		virtual void send_baselines(std::shared_ptr<Entity> e, std::list<std::uint64_t> recieving_entities);
+		virtual void send_baselines(std::shared_ptr<anh::component::Entity> e, std::list<std::shared_ptr<anh::component::Entity>> recieving_entities);
 
-		virtual void send_deltas(std::shared_ptr<Entity> e, std::list<std::uint64_t> recieving_entities);
-		virtual void send_deltas(std::shared_ptr<Entity> e);
+		virtual void send_deltas(std::shared_ptr<anh::component::Entity> e, std::list<std::shared_ptr<anh::component::Entity>> recieving_entities);
+		virtual void send_deltas(std::shared_ptr<anh::component::Entity> e);
 
+		virtual anh::service::ServiceDescription GetServiceDescription();
+		virtual void DescribeConfigOptions(boost::program_options::options_description& description);
+		virtual void subscribe();
+
+		virtual void onStart() {}
+		virtual void onStop() {}
+		
 	private:
 		std::map<anh::HashString, std::shared_ptr<swganh::baseline::baseline_delta_interface>> lookup_;
 		std::map<anh::HashString, std::function<void(std::shared_ptr<anh::component::Entity>, std::vector<anh::ByteBuffer>&)>> groups_;
