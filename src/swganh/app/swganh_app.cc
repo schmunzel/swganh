@@ -72,6 +72,7 @@ SwganhApp::SwganhApp() {
 void SwganhApp::Initialize(int argc, char* argv[]) {
     // Load the configuration    
     LoadAppConfig_(argc, argv);
+    ParsePluginConfig_();
 
     auto app_config = kernel_->GetAppConfig();
 
@@ -96,7 +97,7 @@ void SwganhApp::Initialize(int argc, char* argv[]) {
     CleanupServices_();
 
     // Load the plugin configuration.
-    LoadPlugins_(app_config.plugins);
+    LoadPlugins_(app_config.plugins_config);
 
     kernel_->GetServiceManager()->Initialize(service_config_);
 
@@ -162,8 +163,7 @@ std::shared_ptr<KernelInterface> SwganhApp::GetAppKernel() {
 
 void SwganhApp::LoadAppConfig_(int argc, char* argv[]) {
     auto config_description = kernel_->GetAppConfig().BuildConfigDescription();
-    ParsePluginConfig_();
-
+    
     variables_map vm;
     store(parse_command_line(argc, argv, config_description), vm);
 
@@ -205,7 +205,7 @@ void SwganhApp::LoadServiceConfig_(ServiceConfig& service_config) {
     config_file.close();
 }
 
-void SwganhApp::LoadPlugins_(vector<string> plugins) {    
+void SwganhApp::LoadPlugins_(vector<AppConfig::PluginConfig> plugins) {    
     DLOG(INFO) << "Loading plugins";
 
     auto plugin_manager = kernel_->GetPluginManager();
@@ -213,24 +213,24 @@ void SwganhApp::LoadPlugins_(vector<string> plugins) {
     if (plugins.empty()) {
         plugin_manager->LoadAllPlugins(kernel_->GetAppConfig().plugin_directory);
     } else {
-        for_each(plugins.begin(), plugins.end(), [plugin_manager] (const string& plugin) {
-            plugin_manager->LoadPlugin(plugin);
+        for_each(plugins.begin(), plugins.end(), [plugin_manager] (AppConfig::PluginConfig configs) {
+            plugin_manager->LoadPlugin(configs.name, configs.arguments);
         });
     }
 }
 void SwganhApp::ParsePluginConfig_() {
-    auto app_config = kernel_->GetAppConfig();
+    auto &app_config = kernel_->GetAppConfig();
     for_each(app_config.plugins.begin(), app_config.plugins.end(), [&] (std::string& plugin_name) {
         // search for a space
-        int space_loc = plugin_name.find("\t ");
+        int space_loc = plugin_name.find(" ");
         swganh::app::AppConfig::PluginConfig plugin_config;
-        if (space_loc != 0)
+        if (space_loc != -1)
         {
             // take the first part until the space and thats the name
             plugin_config.name = plugin_name.substr(0,space_loc);
-            string args = plugin_name.substr(space_loc);
+            string args = plugin_name.substr(space_loc+1);
             // split up the rest of the spaces if any into the arguments
-            boost::split(plugin_config.arguments, args, boost::is_any_of("\t "));
+            boost::split(plugin_config.arguments, args, boost::is_any_of(" "));
             app_config.plugins_config.push_back(plugin_config);
         }
         // no spaces found just push back the plugin_name as-is
@@ -238,8 +238,7 @@ void SwganhApp::ParsePluginConfig_() {
         {
             plugin_config.name = plugin_name;
             app_config.plugins_config.push_back(plugin_config);
-        }
-        
+        }   
     });
 }
 

@@ -76,13 +76,15 @@ SceneService::SceneService(shared_ptr<KernelInterface> kernel, const std::string
     entity_manager_ = make_shared<EntityManager>();
     entity_builder_ = make_shared<EntityBuilder>(entity_manager_);
     entity_builder_->Init("templates");
+
+    SetWeather(0, 0, 0, 3);
 }
 
 SceneService::~SceneService() {}
 
 service::ServiceDescription SceneService::GetServiceDescription() {
     service::ServiceDescription service_description(
-        " Scene Service",
+        scene_name() + " Scene Service",
         "scene",
         "0.1",
         "127.0.0.1", 
@@ -167,6 +169,8 @@ bool SceneService::AddPlayerToScene(swganh::character::CharacterLoginData charac
     
     character.client->session->SendMessage(scene_object);
 
+    // Send Baselines here...
+
     SceneEndBaselines scene_object_end;
     scene_object_end.object_id = character.character_id;
     
@@ -198,5 +202,5 @@ bool SceneService::AddCreatureToScene(uint64_t creature_id)
 
 void SceneService::SetWeather(float cloud_x, float cloud_y, float cloud_z, uint32_t weather_type)
 {
-
+    // send weather update
 }

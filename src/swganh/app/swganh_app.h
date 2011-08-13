@@ -15,16 +15,10 @@
 
 #include "anh/app/app_interface.h"
 #include "anh/service/service_directory.h"
-
-namespace anh {
-namespace app {
-class KernelInterface;
-}}  // namespace anh::app
+#include "swganh/app/swganh_kernel.h"
 
 namespace swganh {
 namespace app {
-
-class SwganhKernel;
 
 typedef std::pair<boost::program_options::options_description, boost::program_options::variables_map> ServiceConfig;
 
@@ -46,7 +40,7 @@ private:
     void LoadAppConfig_(int argc, char* argv[]);
     void ParsePluginConfig_();
     void LoadServiceConfig_(ServiceConfig& service_config);
-    void LoadPlugins_(std::vector<std::string> plugins);
+    void LoadPlugins_(std::vector<AppConfig::PluginConfig> plugins);
 
     void CleanupServices_();
     
