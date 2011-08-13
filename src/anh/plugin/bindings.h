@@ -6,6 +6,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "anh/app/kernel_interface.h"
 
@@ -27,7 +28,7 @@ struct ObjectRegistration {
 };
 
 typedef void (*ExitFunc)();
-typedef ExitFunc (*InitFunc)(std::shared_ptr<anh::app::KernelInterface>);
+typedef ExitFunc (*InitFunc)(std::shared_ptr<anh::app::KernelInterface>, std::vector<std::string> args);
 
 #ifdef WIN32
     #ifdef DLL_EXPORTS
@@ -43,7 +44,7 @@ extern
 #ifdef __cplusplus
     "C"
 #endif
-PLUGIN_API ExitFunc InitializePlugin(std::shared_ptr<anh::app::KernelInterface> binding);
+PLUGIN_API ExitFunc InitializePlugin(std::shared_ptr<anh::app::KernelInterface> binding, std::vector<std::string> args);
 
 }}  // namespace anh::plugin
 

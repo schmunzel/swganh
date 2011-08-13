@@ -52,7 +52,7 @@ PluginManager::~PluginManager() {
     });
 }
 
-bool PluginManager::LoadPlugin(const std::string& path) {
+bool PluginManager::LoadPlugin(const std::string& path, std::vector<std::string> args) {
     if (library_map_.find(path) != library_map_.end()) {
         cout << "Step 1 failed " << path << "\n" << endl;
         return false;
@@ -70,7 +70,7 @@ bool PluginManager::LoadPlugin(const std::string& path) {
         return false;
     }
 
-    if (!InitializePlugin(init_func)) {
+    if (!InitializePlugin(init_func, args)) {
         cout << "Step 5 failed " << path << "\n" << endl;
         return false;
     }
@@ -114,12 +114,12 @@ bool PluginManager::LoadAllPlugins(const std::string& directory) {
     return all_loaded;
 }
 
-bool PluginManager::InitializePlugin(InitFunc init_func) {
+bool PluginManager::InitializePlugin(InitFunc init_func, std::vector<std::string> args) {
     if (!init_func) {
         return false;
     }
 
-    ExitFunc exit_func = init_func(kernel_);
+    ExitFunc exit_func = init_func(kernel_, args);
 
     if (!exit_func) {
         return false;

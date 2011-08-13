@@ -141,7 +141,6 @@ void ConnectionService::AddClient_(
     DLOG(WARNING) << "Connection service currently has ("<< client_map.size() << ") clients";
 }
 
-
 void ConnectionService::RemoveClient_(std::shared_ptr<anh::network::soe::Session> session) {
     active().Async([=] () {
         auto client = GetClientFromEndpoint(session->remote_endpoint());

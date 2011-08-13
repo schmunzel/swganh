@@ -44,6 +44,7 @@ public:
 
 private:
     void LoadAppConfig_(int argc, char* argv[]);
+    void ParsePluginConfig_();
     void LoadServiceConfig_(ServiceConfig& service_config);
     void LoadPlugins_(std::vector<std::string> plugins);
 

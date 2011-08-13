@@ -8,6 +8,7 @@
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/program_options.hpp>
+#include <boost/algorithm/string.hpp>
 #include <glog/logging.h>
 
 #include "anh/database/database_manager_interface.h"
@@ -161,6 +162,7 @@ std::shared_ptr<KernelInterface> SwganhApp::GetAppKernel() {
 
 void SwganhApp::LoadAppConfig_(int argc, char* argv[]) {
     auto config_description = kernel_->GetAppConfig().BuildConfigDescription();
+    ParsePluginConfig_();
 
     variables_map vm;
     store(parse_command_line(argc, argv, config_description), vm);
@@ -215,6 +217,30 @@ void SwganhApp::LoadPlugins_(vector<string> plugins) {
             plugin_manager->LoadPlugin(plugin);
         });
     }
+}
+void SwganhApp::ParsePluginConfig_() {
+    auto app_config = kernel_->GetAppConfig();
+    for_each(app_config.plugins.begin(), app_config.plugins.end(), [&] (std::string& plugin_name) {
+        // search for a space
+        int space_loc = plugin_name.find("\t ");
+        swganh::app::AppConfig::PluginConfig plugin_config;
+        if (space_loc != 0)
+        {
+            // take the first part until the space and thats the name
+            plugin_config.name = plugin_name.substr(0,space_loc);
+            string args = plugin_name.substr(space_loc);
+            // split up the rest of the spaces if any into the arguments
+            boost::split(plugin_config.arguments, args, boost::is_any_of("\t "));
+            app_config.plugins_config.push_back(plugin_config);
+        }
+        // no spaces found just push back the plugin_name as-is
+        else
+        {
+            plugin_config.name = plugin_name;
+            app_config.plugins_config.push_back(plugin_config);
+        }
+        
+    });
 }
 
 void SwganhApp::CleanupServices_() {

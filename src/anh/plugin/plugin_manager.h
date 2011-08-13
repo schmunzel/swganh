@@ -29,10 +29,10 @@ public:
     explicit PluginManager(std::shared_ptr<anh::app::KernelInterface> kernel);
     ~PluginManager();
 
-    bool LoadPlugin(const std::string& path);
+    bool LoadPlugin(const std::string& path, std::vector<std::string> args = std::vector<std::string>());
     bool LoadAllPlugins(const std::string& directory);
 
-    bool InitializePlugin(InitFunc init_func);
+    bool InitializePlugin(InitFunc init_func, std::vector<std::string> args);
 
     bool RegisterObject(const std::string& name, const ObjectRegistration* registration);
 

@@ -23,7 +23,14 @@ struct DatabaseConfig {
 };
 
 struct AppConfig {
+    struct PluginConfig 
+    {
+        std::string name;
+        std::vector<std::string> arguments;
+    };
+
     bool single_server_mode;
+    std::vector<PluginConfig> plugins_config;
     std::vector<std::string> plugins;
     std::string plugin_directory;
     std::string galaxy_name;

@@ -23,12 +23,12 @@
 #include <glog/logging.h>
 #include <boost/thread.hpp>
 
-
 #include "anh/app/kernel_interface.h"
 #include "anh/plugin/bindings.h"
 #include "anh/plugin/plugin_manager.h"
 #include "anh/service/service_manager.h"
 #include "scene/scene_service.h"
+#include "swganh/app/swganh_kernel.h"
 
 using namespace anh;
 using namespace app;
@@ -42,15 +42,16 @@ extern "C" PLUGIN_API void ExitModule() {
     return;
 }
 
-extern "C" PLUGIN_API ExitFunc InitializePlugin(shared_ptr<KernelInterface> kernel) {
-
+extern "C" PLUGIN_API ExitFunc InitializePlugin(shared_ptr<KernelInterface> kernel, std::vector<std::string> args) {
+    auto swganh_kernel = static_pointer_cast<swganh::app::SwganhKernel>(kernel);
+        
     ObjectRegistration registration;
     registration.version.major = 1;
     registration.version.minor = 0;
 
     // Register CreateObject
-    registration.CreateObject = [] (ObjectParams* params) -> void * {
-        auto scene_service = new SceneService(params->kernel);
+    registration.CreateObject = [args] (ObjectParams* params) -> void * {
+        auto scene_service = new SceneService(params->kernel, args[0]);
         return scene_service;
     };
 
@@ -59,8 +60,8 @@ extern "C" PLUGIN_API ExitFunc InitializePlugin(shared_ptr<KernelInterface> kern
             delete static_cast<SceneService*>(object);
         }
     };
-
-    kernel->GetPluginManager()->RegisterObject("SceneService", &registration);
+    
+    swganh_kernel->GetPluginManager()->RegisterObject("SceneService", &registration);
 
     return ExitModule;
 }
