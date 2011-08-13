@@ -1,16 +1,18 @@
 #include "baseline_service.h"
 
-
-#include <swganh/baseline/baseline_delta_interface.h>
-#include <swganh/baseline/baseline_event.h>
-#include <swganh/baseline/delta_event.h>
+#include <glog/logging.h>
+#include <vector>
 
 #include <anh/app/kernel_interface.h>
 #include <anh/component/entity.h>
 #include <anh/event_dispatcher/event_dispatcher.h>
+#include "anh/network/soe/session.h"
 
-#include <glog/logging.h>
-#include <vector>
+#include <swganh/baseline/baseline_delta_interface.h>
+#include <swganh/baseline/baseline_event.h>
+#include <swganh/baseline/delta_event.h>
+#include <swganh/scene/messages/scene_end_baselines.h>
+#include <swganh/connection/connection_client.h>
 
 using namespace baseline;
 using namespace swganh::baseline;
@@ -30,8 +32,13 @@ void BaselineService::detach_baseline_delta(anh::HashString name)
 {
 	lookup_.erase(name);
 }
-
-void BaselineService::send_baselines(std::shared_ptr<Entity> e, std::list<std::shared_ptr<anh::component::Entity>> recieving_entities)
+void BaselineService::send_baselines_self(std::shared_ptr<anh::component::Entity> e, std::shared_ptr<swganh::connection::ConnectionClient> c) 
+{
+    std::list<std::shared_ptr<anh::component::Entity>> self;
+    self.push_back(e);
+    send_baselines(e, c, self);
+}
+void BaselineService::send_baselines(std::shared_ptr<Entity> e, std::shared_ptr<swganh::connection::ConnectionClient> c, std::list<std::shared_ptr<anh::component::Entity>> recieving_entities)
 {
 	//Generate Relevant Baselines
 	std::vector<std::pair<bool, anh::ByteBuffer>> generated_baselines;
@@ -60,10 +67,14 @@ void BaselineService::send_baselines(std::shared_ptr<Entity> e, std::list<std::s
 			for(base_itr = generated_baselines.begin(); base_itr != base_end; ++base_itr) {
 				if(!base_itr->first || (base_itr->first && *recv_itr == e))
 				{
-					//Send
+					c->session->SendMessage((*base_itr).second);
 				}
 			}
 		}
+        // send end baseline
+        swganh::scene::messages::SceneEndBaselines seb;
+        seb.object_id = e->id();
+        c->session->SendMessage(seb);
 	}
 	else
 	{
@@ -165,7 +176,7 @@ void BaselineService::subscribe()
 		auto actual_event = std::dynamic_pointer_cast<swganh::baseline::BaselineEvent, anh::event_dispatcher::EventInterface>(e);
 		if(actual_event->entity != nullptr)
 		{
-			send_baselines(actual_event->entity, actual_event->receiving_entities);
+			//send_baselines(actual_event->entity, actual_event->receiving_entities);
 			return true;
 		}
 		return false;

@@ -44,7 +44,7 @@ namespace swganh { namespace baseline {
 	protected:
 		enum constants : std::uint32_t
 		{
-			BaselinesMessage = 0x0C5FA768,
+			BaselinesMessage = 0x68A75F0C,
 			DeltasMessage = 0x53218612
 		};
 	};

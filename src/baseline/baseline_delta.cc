@@ -1,5 +1,6 @@
 #include "baseline_delta.h"
 #include <anh/component/entity.h>
+#include <anh/utilities.h>
 
 using namespace baseline;
 using namespace swganh::baseline;
@@ -26,7 +27,7 @@ anh::ByteBuffer BaselineDelta::build_baseline(std::shared_ptr<Entity> e)
 	anh::ByteBuffer b;
 
 	b.write<uint16_t>(5);
-	b.write<uint32_t>(BaselinesMessage);
+	b.write<uint32_t>(anh::hostToLittle(BaselinesMessage));
 	b.write<uint64_t>(e->id());
 	b.write<uint32_t>(type_);
 	b.write<uint8_t>(id_);

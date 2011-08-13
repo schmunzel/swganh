@@ -22,6 +22,7 @@
 
 #include <glog/logging.h>
 #include <boost/thread.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include "anh/app/kernel_interface.h"
 #include "anh/plugin/bindings.h"
@@ -60,8 +61,7 @@ extern "C" PLUGIN_API ExitFunc InitializePlugin(shared_ptr<KernelInterface> kern
             delete static_cast<SceneService*>(object);
         }
     };
-    
-    swganh_kernel->GetPluginManager()->RegisterObject("SceneService", &registration);
+    swganh_kernel->GetPluginManager()->RegisterObject( args[0] + "SceneService", &registration);
 
     return ExitModule;
 }

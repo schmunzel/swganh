@@ -110,6 +110,25 @@ void SceneService::subscribe() {
 
 void SceneService::DescribeConfigOptions(boost::program_options::options_description& description) {}
 
+std::shared_ptr<swganh::connection::ConnectionClient> SceneService::getConnectionClient(uint64_t entity_id)
+{
+    EntityClientMap& client_map = entity_clients();
+
+    auto find_it = std::find_if(
+        client_map.begin(), 
+        client_map.end(), 
+        [entity_id] (EntityClientMap::value_type& entity_client) 
+    {
+        return entity_client.first == entity_id;
+    });
+
+    if (find_it != client_map.end()){
+        return (*find_it).second;
+    }
+    else
+        return nullptr;
+}
+
 bool SceneService::AddEntityClient_(uint64_t entity_id, std::shared_ptr<swganh::connection::ConnectionClient> client) {
     EntityClientMap& client_map = entity_clients();
 
@@ -126,7 +145,7 @@ bool SceneService::AddEntityClient_(uint64_t entity_id, std::shared_ptr<swganh::
         return false;
     }
     
-    DLOG(WARNING) << "Adding entity to connection client";
+    DLOG(WARNING) << "Adding entity to connection client:" << client->session->connection_id();
 
     EntityClientMap::accessor a;
     client_map.insert(a, entity_id);
@@ -146,6 +165,7 @@ bool SceneService::AddPlayerToScene(swganh::character::CharacterLoginData charac
 {
     // create our player
     auto entity_errors = entity_builder()->BuildEntity(character.character_id, "Player", "anh.Player");
+    auto entity = entity_manager()->GetEntity(character.character_id);
     
     CmdStartScene start_scene;
     // @TODO: Replace with configurable value
@@ -168,7 +188,9 @@ bool SceneService::AddPlayerToScene(swganh::character::CharacterLoginData charac
     
     character.client->session->SendMessage(scene_object);
 
-    // Send Baselines here...
+    // Send Baselines
+    auto conn_client = getConnectionClient(character.character_id);
+    baseline_service()->send_baselines_self(entity, conn_client);
 
     SceneEndBaselines scene_object_end;
     scene_object_end.object_id = character.character_id;
@@ -188,11 +210,12 @@ bool SceneService::LoadMap(const std::string& map_file)
 bool SceneService::LoadSceneEntities()
 {
     // based on scene name, load the database information for each entity
-    //
+    // This will likely just call out to a database provider that will then do the dirty work
     return true;
 }
 
 bool SceneService::AddEntityToScene(uint64_t entity_id)
 {
+    // Build the entity and then pass baselines to relevant areas.
     return true;
 }

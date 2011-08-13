@@ -1,5 +1,4 @@
-<entity type='Player' tags='player'>
+<entity type='Player' tags='player;creature'>
 	<component type='transform'>
-		
 	</component>
 </entity>

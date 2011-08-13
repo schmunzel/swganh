@@ -56,7 +56,8 @@ public:
     bool LoadMap(const std::string& map_file);
     bool LoadSceneEntities();
     bool AddEntityToScene(uint64_t entity_id);
-    
+
+    std::shared_ptr<swganh::connection::ConnectionClient> getConnectionClient(uint64_t entity_id);
     std::shared_ptr<anh::component::EntityManager> entity_manager() { return entity_manager_; }
     std::shared_ptr<anh::component::EntityBuilder> entity_builder() { return entity_builder_; }
     std::shared_ptr<baseline::BaselineService> baseline_service() { return baseline_service_; }

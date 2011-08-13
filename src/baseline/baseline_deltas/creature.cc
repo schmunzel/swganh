@@ -5,7 +5,7 @@ namespace baseline { namespace baseline_deltas {
 
 	void init_creo1(baseline::BaselineService* serv)
 	{
-		auto bd = std::make_shared<baseline::BaselineDelta>("CREO", 1, true);
+		auto bd = std::make_shared<baseline::BaselineDelta>("OERC", 0x1, true);
 
 		bd->attach_updatable(0, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
 			//Bank Credits
@@ -34,7 +34,7 @@ namespace baseline { namespace baseline_deltas {
 
 	void init_creo4(baseline::BaselineService* serv)
 	{
-		auto bd = std::make_shared<baseline::BaselineDelta>("CREO", 4, true);
+		auto bd = std::make_shared<baseline::BaselineDelta>("OERC", 0x4, true);
 
 		bd->attach_updatable(0, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
 			//Acceleration Multiplier Base
@@ -114,7 +114,7 @@ namespace baseline { namespace baseline_deltas {
 
 	void init_creo3(baseline::BaselineService* serv)
 	{
-		auto bd = std::make_shared<baseline::BaselineDelta>("CREO", 3, false);
+		auto bd = std::make_shared<baseline::BaselineDelta>("OERC", 0x3, false);
 		
 		bd->attach_updatable(0, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
 			//Complexity
@@ -123,14 +123,14 @@ namespace baseline { namespace baseline_deltas {
 
 		bd->attach_updatable(1, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
 			//Default Name
-			b.write<std::string>("");
+			b.write<std::string>("Kronos");
 			b.write<std::uint32_t>(0);
 			b.write<std::string>("");
 		});
 
 		bd->attach_updatable(2, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
 			//Custom Name
-			b.write<std::wstring>(L"");
+			b.write<std::wstring>(L"Kronos");
 		});
 
 		bd->attach_updatable(3, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
@@ -215,7 +215,7 @@ namespace baseline { namespace baseline_deltas {
 
 	void init_creo6(baseline::BaselineService* serv)
 	{
-		auto bd = std::make_shared<baseline::BaselineDelta>("CREO", 6, true);
+		auto bd = std::make_shared<baseline::BaselineDelta>("OERC", 0x6, true);
 
 		bd->attach_updatable(0, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
 			//??
@@ -306,7 +306,7 @@ namespace baseline { namespace baseline_deltas {
 
 		bd->attach_updatable(16, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
 			//SetObjectTemplateString
-			b.write<std::string>(0);
+			b.write<std::string>("");
 		});
 
 		bd->attach_updatable(17, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
@@ -324,7 +324,7 @@ namespace baseline { namespace baseline_deltas {
 		init_creo3(serv);
 		init_creo6(serv);
 
-		serv->create_group("creature", [&serv] (std::shared_ptr<anh::component::Entity> e, std::vector<std::pair<bool, anh::ByteBuffer>>& bs) {
+		serv->create_group("creature", [serv] (std::shared_ptr<anh::component::Entity> e, std::vector<std::pair<bool, anh::ByteBuffer>>& bs) {
 			auto bd = serv->get_baseline_delta("CREO1");
 			if(bd != nullptr)
 				bs.push_back(std::make_pair<bool, anh::ByteBuffer>(bd->is_private(), bd->build_baseline(e)));
