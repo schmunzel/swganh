@@ -53,7 +53,7 @@ extern "C" PLUGIN_API void ExitModule()
     return;
 }
 
-extern "C" PLUGIN_API ExitFunc InitializePlugin(shared_ptr<KernelInterface> kernel) 
+extern "C" PLUGIN_API ExitFunc InitializePlugin(shared_ptr<KernelInterface> kernel, std::vector<std::string> args) 
 {
 	ObjectRegistration registration;
     registration.version.major = 1;
@@ -74,7 +74,7 @@ extern "C" PLUGIN_API ExitFunc InitializePlugin(shared_ptr<KernelInterface> kern
         }
     };
 
-    kernel->GetPluginManager()->RegisterObject("CharacterService", &registration);
+    kernel->GetPluginManager()->RegisterObject("BaselineService", &registration);
 
     return ExitModule;
 }
