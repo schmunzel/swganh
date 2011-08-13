@@ -55,9 +55,26 @@ extern "C" PLUGIN_API void ExitModule()
 
 extern "C" PLUGIN_API ExitFunc InitializePlugin(shared_ptr<KernelInterface> kernel) 
 {
-	auto serv = std::make_shared<baseline::baseline_service>(kernel);
+	ObjectRegistration registration;
+    registration.version.major = 1;
+    registration.version.minor = 0;
 
-	baseline::baseline_deltas::init_creature(serv);
+    // Register CreateObject
+    registration.CreateObject = [] (ObjectParams* params) -> void * {
+		auto ptr = new baseline::baseline_service(params->kernel);
+
+		baseline::baseline_deltas::init_creature(ptr);
+
+		return ptr;
+    };
+
+    registration.DestroyObject = [] (void * object) {
+        if (object) {
+            delete object;
+        }
+    };
+
+    kernel->GetPluginManager()->RegisterObject("CharacterService", &registration);
 
     return ExitModule;
 }

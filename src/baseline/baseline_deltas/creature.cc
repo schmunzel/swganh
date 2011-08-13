@@ -3,7 +3,7 @@
 
 namespace baseline { namespace baseline_deltas {
 
-	void init_creo1(std::shared_ptr<baseline::baseline_service>& serv)
+	void init_creo1(baseline::baseline_service* serv)
 	{
 		auto bd = std::make_shared<baseline::baseline_delta>("CREO", 1, true);
 
@@ -32,7 +32,7 @@ namespace baseline { namespace baseline_deltas {
 		serv->attach_baseline_delta("CREO1", bd);
 	}
 
-	void init_creo4(std::shared_ptr<baseline::baseline_service>& serv)
+	void init_creo4(baseline::baseline_service* serv)
 	{
 		auto bd = std::make_shared<baseline::baseline_delta>("CREO", 4, true);
 
@@ -112,7 +112,7 @@ namespace baseline { namespace baseline_deltas {
 		serv->attach_baseline_delta("CREO4", bd);
 	}
 
-	void init_creo3(std::shared_ptr<baseline::baseline_service>& serv)
+	void init_creo3(baseline::baseline_service* serv)
 	{
 		auto bd = std::make_shared<baseline::baseline_delta>("CREO", 3, false);
 		
@@ -213,7 +213,7 @@ namespace baseline { namespace baseline_deltas {
 		serv->attach_baseline_delta("CREO3", bd);
 	}
 
-	void init_creo6(std::shared_ptr<baseline::baseline_service>& serv)
+	void init_creo6(baseline::baseline_service* serv)
 	{
 		auto bd = std::make_shared<baseline::baseline_delta>("CREO", 6, true);
 
@@ -317,7 +317,7 @@ namespace baseline { namespace baseline_deltas {
 		serv->attach_baseline_delta("CREO6", bd);
 	}
 
-	void init_creature(std::shared_ptr<baseline::baseline_service> serv)
+	void init_creature(baseline::baseline_service* serv)
 	{
 		init_creo1(serv);
 		init_creo4(serv);
