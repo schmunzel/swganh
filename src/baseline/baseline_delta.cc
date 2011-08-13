@@ -5,23 +5,23 @@ using namespace baseline;
 using namespace swganh::baseline;
 using namespace anh::component;
 
-baseline_delta::baseline_delta(const char* type, std::uint8_t id, bool is_private)
+BaselineDelta::BaselineDelta(const char* type, std::uint8_t id, bool is_private)
 	: id_(id), is_private_(is_private)
 {
 	memcpy(&type_, type, 4);
 }
 
-void baseline_delta::attach_updatable(std::uint16_t id, UpdatableFunctor uf)
+void BaselineDelta::attach_updatable(std::uint16_t id, UpdatableFunctor uf)
 {
 	updatables_.insert(std::make_pair<std::uint16_t, UpdatableFunctor>(id, uf));
 }
 
-void baseline_delta::detach_updatable(std::uint16_t id)
+void BaselineDelta::detach_updatable(std::uint16_t id)
 {
 	updatables_.erase(id);
 }
 
-anh::ByteBuffer baseline_delta::build_baseline(std::shared_ptr<Entity> e)
+anh::ByteBuffer BaselineDelta::build_baseline(std::shared_ptr<Entity> e)
 {
 	anh::ByteBuffer b;
 
@@ -43,7 +43,7 @@ anh::ByteBuffer baseline_delta::build_baseline(std::shared_ptr<Entity> e)
 	return b;
 }
 
-anh::ByteBuffer baseline_delta::build_delta(std::shared_ptr<Entity> e, swganh::baseline::Updatables::iterator& itr, swganh::baseline::Updatables::iterator& absolute_end)
+anh::ByteBuffer BaselineDelta::build_delta(std::shared_ptr<Entity> e, swganh::baseline::Updatables::iterator& itr, swganh::baseline::Updatables::iterator& absolute_end)
 {
 	anh::ByteBuffer b;
 

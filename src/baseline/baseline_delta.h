@@ -4,11 +4,11 @@
 #include <swganh/baseline/baseline_delta_interface.h>
 
 namespace baseline {
-	class baseline_delta : public swganh::baseline::baseline_delta_interface
+	class BaselineDelta : public swganh::baseline::BaselineDeltaInterface
 	{
 	public:
 
-		baseline_delta(const char* type, std::uint8_t id, bool is_private);
+		BaselineDelta(const char* type, std::uint8_t id, bool is_private);
 
 		virtual void attach_updatable(std::uint16_t id, swganh::baseline::UpdatableFunctor uf);
 		virtual void detach_updatable(std::uint16_t id);

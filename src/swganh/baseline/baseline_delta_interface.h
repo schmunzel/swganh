@@ -30,7 +30,7 @@ namespace swganh { namespace baseline {
 	typedef std::set<Updatable, UpdatableComp> Updatables;
 	#endif
 
-	class baseline_delta_interface
+	class BaselineDeltaInterface
 	{
 	public:
 		virtual void attach_updatable(std::uint16_t id, UpdatableFunctor uf) = 0;

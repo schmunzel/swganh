@@ -16,22 +16,22 @@ using namespace baseline;
 using namespace swganh::baseline;
 using namespace anh::component;
 
-baseline_service::baseline_service(std::shared_ptr<anh::app::KernelInterface> kernel) 
-	: baseline_service_interface(kernel)
+BaselineService::BaselineService(std::shared_ptr<anh::app::KernelInterface> kernel) 
+	: BaselineServiceInterface(kernel)
 {
 }
 
-void baseline_service::attach_baseline_delta(anh::HashString name, std::shared_ptr<baseline_delta_interface> bdi)
+void BaselineService::attach_baseline_delta(anh::HashString name, std::shared_ptr<BaselineDeltaInterface> bdi)
 {
-	lookup_.insert(std::make_pair<anh::HashString, std::shared_ptr<swganh::baseline::baseline_delta_interface>>(name, bdi));
+	lookup_.insert(std::make_pair<anh::HashString, std::shared_ptr<swganh::baseline::BaselineDeltaInterface>>(name, bdi));
 }
 
-void baseline_service::detach_baseline_delta(anh::HashString name)
+void BaselineService::detach_baseline_delta(anh::HashString name)
 {
 	lookup_.erase(name);
 }
 
-void baseline_service::send_baselines(std::shared_ptr<Entity> e, std::list<std::shared_ptr<anh::component::Entity>> recieving_entities)
+void BaselineService::send_baselines(std::shared_ptr<Entity> e, std::list<std::shared_ptr<anh::component::Entity>> recieving_entities)
 {
 	//Generate Relevant Baselines
 	std::vector<std::pair<bool, anh::ByteBuffer>> generated_baselines;
@@ -71,7 +71,7 @@ void baseline_service::send_baselines(std::shared_ptr<Entity> e, std::list<std::
 	}
 }
 
-void baseline_service::send_deltas(std::shared_ptr<Entity> e, std::list<std::shared_ptr<anh::component::Entity>> recieving_entities)
+void BaselineService::send_deltas(std::shared_ptr<Entity> e, std::list<std::shared_ptr<anh::component::Entity>> recieving_entities)
 {
 	//Generate Relevant Deltas
 	std::vector<std::pair<bool, anh::ByteBuffer>> generated_deltas;
@@ -113,7 +113,7 @@ void baseline_service::send_deltas(std::shared_ptr<Entity> e, std::list<std::sha
 
 }
 
-void baseline_service::send_deltas(std::shared_ptr<Entity> e)
+void BaselineService::send_deltas(std::shared_ptr<Entity> e)
 {
 	//Generate Relevant Deltas
 	std::vector<std::pair<bool, anh::ByteBuffer>> generated_deltas;
@@ -143,7 +143,7 @@ void baseline_service::send_deltas(std::shared_ptr<Entity> e)
 	std::vector<std::pair<bool, anh::ByteBuffer>>::iterator base_end = generated_deltas.end();
 }
 
-anh::service::ServiceDescription baseline_service::GetServiceDescription()
+anh::service::ServiceDescription BaselineService::GetServiceDescription()
 {
 	anh::service::ServiceDescription service_description(
         "ANH Baseline/Delta Service",
@@ -157,9 +157,9 @@ anh::service::ServiceDescription baseline_service::GetServiceDescription()
 	return service_description;
 }
 
-void baseline_service::DescribeConfigOptions(boost::program_options::options_description& description) {}
+void BaselineService::DescribeConfigOptions(boost::program_options::options_description& description) {}
 
-void baseline_service::subscribe()
+void BaselineService::subscribe()
 {
 	kernel()->GetEventDispatcher()->subscribe(anh::HashString("BaselineEvent"), [this] (std::shared_ptr<anh::event_dispatcher::EventInterface> e) -> bool {
 		auto actual_event = std::dynamic_pointer_cast<swganh::baseline::BaselineEvent, anh::event_dispatcher::EventInterface>(e);
@@ -182,17 +182,17 @@ void baseline_service::subscribe()
 	});
 }
 
-void baseline_service::create_group(anh::HashString name, swganh::baseline::GroupFunctor functor)
+void BaselineService::create_group(anh::HashString name, swganh::baseline::GroupFunctor functor)
 {
 	groups_.insert(std::make_pair<anh::HashString, swganh::baseline::GroupFunctor>(name, functor));
 }
 
-void baseline_service::remove_group(anh::HashString name)
+void BaselineService::remove_group(anh::HashString name)
 {
 	groups_.erase(name);
 }
 
-std::shared_ptr<swganh::baseline::baseline_delta_interface> baseline_service::get_baseline_delta(anh::HashString name)
+std::shared_ptr<swganh::baseline::BaselineDeltaInterface> BaselineService::get_baseline_delta(anh::HashString name)
 {
 	auto itr = lookup_.find(name);
 	if(itr != lookup_.end()) {

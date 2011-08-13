@@ -3,9 +3,9 @@
 
 namespace baseline { namespace baseline_deltas {
 
-	void init_creo1(baseline::baseline_service* serv)
+	void init_creo1(baseline::BaselineService* serv)
 	{
-		auto bd = std::make_shared<baseline::baseline_delta>("CREO", 1, true);
+		auto bd = std::make_shared<baseline::BaselineDelta>("CREO", 1, true);
 
 		bd->attach_updatable(0, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
 			//Bank Credits
@@ -32,9 +32,9 @@ namespace baseline { namespace baseline_deltas {
 		serv->attach_baseline_delta("CREO1", bd);
 	}
 
-	void init_creo4(baseline::baseline_service* serv)
+	void init_creo4(baseline::BaselineService* serv)
 	{
-		auto bd = std::make_shared<baseline::baseline_delta>("CREO", 4, true);
+		auto bd = std::make_shared<baseline::BaselineDelta>("CREO", 4, true);
 
 		bd->attach_updatable(0, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
 			//Acceleration Multiplier Base
@@ -112,9 +112,9 @@ namespace baseline { namespace baseline_deltas {
 		serv->attach_baseline_delta("CREO4", bd);
 	}
 
-	void init_creo3(baseline::baseline_service* serv)
+	void init_creo3(baseline::BaselineService* serv)
 	{
-		auto bd = std::make_shared<baseline::baseline_delta>("CREO", 3, false);
+		auto bd = std::make_shared<baseline::BaselineDelta>("CREO", 3, false);
 		
 		bd->attach_updatable(0, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
 			//Complexity
@@ -213,9 +213,9 @@ namespace baseline { namespace baseline_deltas {
 		serv->attach_baseline_delta("CREO3", bd);
 	}
 
-	void init_creo6(baseline::baseline_service* serv)
+	void init_creo6(baseline::BaselineService* serv)
 	{
-		auto bd = std::make_shared<baseline::baseline_delta>("CREO", 6, true);
+		auto bd = std::make_shared<baseline::BaselineDelta>("CREO", 6, true);
 
 		bd->attach_updatable(0, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
 			//??
@@ -317,7 +317,7 @@ namespace baseline { namespace baseline_deltas {
 		serv->attach_baseline_delta("CREO6", bd);
 	}
 
-	void init_creature(baseline::baseline_service* serv)
+	void init_creature(baseline::BaselineService* serv)
 	{
 		init_creo1(serv);
 		init_creo4(serv);

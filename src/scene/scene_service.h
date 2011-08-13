@@ -24,7 +24,7 @@
 #include "swganh/scene/base_scene_service.h"
 #include "anh/component/entity_manager.h"
 #include "anh/component/entity_builder.h"
-
+#include "baseline/baseline_service.h"
 #include "swganh/base/base_service.h"
 
 
@@ -59,11 +59,13 @@ public:
     
     std::shared_ptr<anh::component::EntityManager> entity_manager() { return entity_manager_; }
     std::shared_ptr<anh::component::EntityBuilder> entity_builder() { return entity_builder_; }
+    std::shared_ptr<baseline::BaselineService> baseline_service() { return baseline_service_; }
 private:
     bool AddEntityClient_(uint64_t entity_id, std::shared_ptr<swganh::connection::ConnectionClient> connection_client);
     bool RemoveEntityClient_(uint64_t entity_id);
     std::shared_ptr<anh::component::EntityManager> entity_manager_;
     std::shared_ptr<anh::component::EntityBuilder> entity_builder_;
+    std::shared_ptr<baseline::BaselineService> baseline_service_;
 };
 
 }  // namespace scene

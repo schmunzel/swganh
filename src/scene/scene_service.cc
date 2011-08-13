@@ -76,6 +76,7 @@ SceneService::SceneService(shared_ptr<KernelInterface> kernel, const std::string
     entity_manager_ = make_shared<EntityManager>();
     entity_builder_ = make_shared<EntityBuilder>(entity_manager_);
     entity_builder_->Init("templates");
+    baseline_service_ = static_pointer_cast<baseline::BaselineService>(kernel->GetServiceManager()->GetService("BaselineService"));
 }
 
 SceneService::~SceneService() {}
@@ -99,7 +100,7 @@ void SceneService::onStop() {}
 
 void SceneService::subscribe() {
     auto connection_service = std::static_pointer_cast<BaseConnectionService>(kernel()->GetServiceManager()->GetService("ConnectionService"));
-
+    
     kernel()->GetEventDispatcher()->subscribe("SelectCharacterLogin",[this](shared_ptr<EventInterface> incoming_event) ->bool {
         auto select_character = static_pointer_cast<BasicEvent<swganh::character::CharacterLoginData>>(incoming_event);
         AddEntityClient_(select_character->character_id, select_character->client);

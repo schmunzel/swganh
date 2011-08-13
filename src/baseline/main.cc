@@ -61,7 +61,7 @@ extern "C" PLUGIN_API ExitFunc InitializePlugin(shared_ptr<KernelInterface> kern
 
     // Register CreateObject
     registration.CreateObject = [] (ObjectParams* params) -> void * {
-		auto ptr = new baseline::baseline_service(params->kernel);
+		auto ptr = new baseline::BaselineService(params->kernel);
 
 		baseline::baseline_deltas::init_creature(ptr);
 
