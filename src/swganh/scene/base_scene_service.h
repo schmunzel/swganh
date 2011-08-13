@@ -73,14 +73,9 @@ public:
     virtual bool AddPlayerToScene(swganh::character::CharacterLoginData data) = 0;
 
     /**
-    *  @brief adds the creature to the scene
+    *  @brief adds the entity to the scene
     */
-    virtual bool AddCreatureToScene(uint64_t creature_id) = 0;
-
-    /**
-    *  @brief sets the weather
-    */
-    virtual void SetWeather(float cloud_x, float cloud_y, float cloud_z, uint32_t weather_type) = 0;
+    virtual bool AddEntityToScene(uint64_t entity_id) = 0;
 
     /**
     *  @brief Gets the Scene Name

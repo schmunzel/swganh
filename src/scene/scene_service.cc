@@ -76,8 +76,6 @@ SceneService::SceneService(shared_ptr<KernelInterface> kernel, const std::string
     entity_manager_ = make_shared<EntityManager>();
     entity_builder_ = make_shared<EntityBuilder>(entity_manager_);
     entity_builder_->Init("templates");
-
-    SetWeather(0, 0, 0, 3);
 }
 
 SceneService::~SceneService() {}
@@ -193,14 +191,7 @@ bool SceneService::LoadSceneEntities()
     return true;
 }
 
-bool SceneService::AddCreatureToScene(uint64_t creature_id)
+bool SceneService::AddEntityToScene(uint64_t entity_id)
 {
-    // add the specified creature to the scene??
-    // not sure if we need more than just the creature_id for this..
     return true;
-}
-
-void SceneService::SetWeather(float cloud_x, float cloud_y, float cloud_z, uint32_t weather_type)
-{
-    // send weather update
 }

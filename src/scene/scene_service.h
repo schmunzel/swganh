@@ -55,9 +55,8 @@ public:
     bool AddPlayerToScene(swganh::character::CharacterLoginData data);
     bool LoadMap(const std::string& map_file);
     bool LoadSceneEntities();
-    bool AddCreatureToScene(uint64_t creature_id);
-    void SetWeather(float cloud_x, float cloud_y, float cloud_z, uint32_t weather_type);
-
+    bool AddEntityToScene(uint64_t entity_id);
+    
     std::shared_ptr<anh::component::EntityManager> entity_manager() { return entity_manager_; }
     std::shared_ptr<anh::component::EntityBuilder> entity_builder() { return entity_builder_; }
 private:
