@@ -18,6 +18,8 @@
 */
 
 #include <anh/component/entity.h>
+#include <anh/event_dispatcher/event_dispatcher_interface.h>
+#include <swganh/baseline/delta_event.h>
 
 namespace anh {
 namespace component {
@@ -94,6 +96,11 @@ bool Entity::HasTag(const Tag& tag)
 		return false;
 }
 
+TagSet Entity::Tags()
+{
+	return tags_;
+}
+
 void Entity::Update(const float deltaMilliseconds)
 {
 	std::for_each(components_.begin(), components_.end(), [=](ComponentsMap::value_type& pair) {
@@ -110,11 +117,52 @@ void Entity::Update(const float deltaMilliseconds)
 	});
 }
 
+void Entity::Update(const float deltaMilliseconds, std::shared_ptr<anh::event_dispatcher::EventDispatcherInterface>& eventDispatch)
+{
+	std::for_each(components_.begin(), components_.end(), [=](ComponentsMap::value_type& pair) {
+		pair.second->Update(deltaMilliseconds);
+        // dirty
+        if (pair.second->dirty())
+        {
+            // persist to associated db mapper
+            if (pair.second->attribute_mapper() != nullptr) {
+                pair.second->attribute_mapper()->Persist(pair.second);
+                pair.second->set_dirty(false);
+            }
+        }
+	});
+
+	if(updates_.size() > 0)
+	{
+		eventDispatch->triggerAsync(anh::event_dispatcher::make_shared_event("DeltaEvent", swganh::baseline::DeltaEvent(shared_from_this())));
+	}
+}
+
 void Entity::BroadcastMessage(Message message)
 {
 	std::for_each(components_.begin(), components_.end(), [=](ComponentsMap::value_type& pair) {
 		pair.second->HandleMessage(message);
 	});
+}
+
+void Entity::add_update(anh::HashString hs, std::uint16_t id)
+{ 
+	updates_.insert(std::make_pair<anh::HashString, std::uint16_t>(hs, id)); 
+
+	if(updates_.size() == 1)
+	{
+		//Send Update Via Event Dispatch
+	}
+}
+	
+void Entity::clear_updates() 
+{ 
+	updates_.clear();
+}
+
+void Entity::swap_updates(swganh::baseline::Updatables& other) 
+{ 
+	updates_.swap(other);
 }
 
 }

@@ -103,10 +103,10 @@ void EntityManager::BroadcastMessage(const EntityId& entity_id, const Message me
 	}
 }
 
-void EntityManager::Update(const float deltaMilliseconds)
+void EntityManager::Update(const float deltaMilliseconds, std::shared_ptr<anh::event_dispatcher::EventDispatcherInterface> dispatch)
 {
-	std::for_each(entities_.begin(), entities_.end(), [=](EntityMap::value_type& i) {
-		i.second->Update(deltaMilliseconds);
+	std::for_each(entities_.begin(), entities_.end(), [=, &dispatch](EntityMap::value_type& i) {
+		i.second->Update(deltaMilliseconds, dispatch);
 	});
 }
 

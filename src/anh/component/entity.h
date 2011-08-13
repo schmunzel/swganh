@@ -24,7 +24,30 @@
 #include <set>
 #include <anh/component/component_interface.h>
 
+#ifndef UPDATABLES
+#define UPDATABLES
+namespace swganh { namespace baseline {
+	typedef std::pair<anh::HashString, std::uint16_t> Updatable;
+	struct UpdatableComp 
+	{
+		bool operator() ( Updatable lhs, Updatable rhs) 
+		{
+			return (lhs.first < rhs.first) || ((lhs.first == rhs.first) && lhs.second < rhs.second);
+		}
+	};
+
+	typedef std::set<Updatable, UpdatableComp> Updatables;
+}
+}
+#endif
+
+
 namespace anh {
+
+namespace event_dispatcher {
+	class EventDispatcherInterface;
+}
+
 namespace component {
 
 typedef anh::HashString Tag;
@@ -35,7 +58,7 @@ typedef std::set<Tag>::iterator		TagSetIterator;
  * A collection of components which represent a "seperate existance" or object. This class also
  * contains basic typing (tags) and identification (entity id) attributes.
  */
-class Entity : public boost::noncopyable
+class Entity : public boost::noncopyable, public std::enable_shared_from_this<Entity>
 {
 public:
 
@@ -66,11 +89,17 @@ public:
 	void AddTag(const Tag& tag);
 	void RemoveTag(const Tag& tag);
 	bool HasTag(const Tag& tag);
+	TagSet Tags();
 
 	/**
 	 * Updates each component that is attached to the entity.
 	 */
 	void Update(const float deltaMilliseconds);
+
+	/**
+	 * Updates each component that is attached to the entity.
+	 */
+	void Update(const float deltaMilliseconds, std::shared_ptr<anh::event_dispatcher::EventDispatcherInterface>& eventDispatch);
 
 	/**
 	 * Sends a message to each of the entities components.
@@ -79,6 +108,10 @@ public:
 
 	const EntityId& id() const { return id_; }
 	const std::string& name() const { return name_; }
+
+	void add_update(anh::HashString hs, std::uint16_t id);
+	void clear_updates();
+	void swap_updates(swganh::baseline::Updatables& other);
 
 private:
 	typedef std::map<InterfaceType, std::shared_ptr<ComponentInterface>>			ComponentsMap;
@@ -89,6 +122,7 @@ private:
 	TagSet								tags_;
 	ComponentsMap						components_;
 
+	swganh::baseline::Updatables		updates_;
 };
 
 #include "entity-inl.h"

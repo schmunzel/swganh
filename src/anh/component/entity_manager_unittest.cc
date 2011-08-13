@@ -151,7 +151,7 @@ TEST_F(EntityManagerTests, CanUpdate) {
 	entity_manager.AttachComponent(entity_id_, component);
 
 	// Update
-	entity_manager.Update(0);
+	entity_manager.Update(0, nullptr);
 
 	// Detach
 	entity_manager.DetachComponent(entity_id_, "Mock");
