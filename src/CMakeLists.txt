@@ -111,6 +111,7 @@ add_subdirectory(login)
 add_subdirectory(connection)
 add_subdirectory(character)
 add_subdirectory(scene)
+add_subdirectory(baseline)
 
 ## project executables
 add_subdirectory(swganh)
