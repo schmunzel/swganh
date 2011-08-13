@@ -70,8 +70,9 @@ using namespace database;
 using namespace std;
 using namespace swganh::connection;
 
-SceneService::SceneService(shared_ptr<KernelInterface> kernel) 
+SceneService::SceneService(shared_ptr<KernelInterface> kernel, const std::string& name) 
     : BaseSceneService(kernel) {
+    scene_name(name);
     entity_manager_ = make_shared<EntityManager>();
     entity_builder_ = make_shared<EntityBuilder>(entity_manager_);
     entity_builder_->Init("templates");
@@ -81,7 +82,7 @@ SceneService::~SceneService() {}
 
 service::ServiceDescription SceneService::GetServiceDescription() {
     service::ServiceDescription service_description(
-        "ANH Scene Service",
+        " Scene Service",
         "scene",
         "0.1",
         "127.0.0.1", 
@@ -101,22 +102,22 @@ void SceneService::subscribe() {
 
     kernel()->GetEventDispatcher()->subscribe("SelectCharacterLogin",[this](shared_ptr<EventInterface> incoming_event) ->bool {
         auto select_character = static_pointer_cast<BasicEvent<swganh::character::CharacterLoginData>>(incoming_event);
-        AddEntityClient(select_character->character_id, select_character->client);
-        return CreateSceneForPlayer(*select_character);
+        AddEntityClient_(select_character->character_id, select_character->client);
+        return AddPlayerToScene(*select_character);
     });
 }
 
 void SceneService::DescribeConfigOptions(boost::program_options::options_description& description) {}
 
-bool SceneService::AddEntityClient(uint64_t entity_id, std::shared_ptr<swganh::connection::ConnectionClient> client) {
+bool SceneService::AddEntityClient_(uint64_t entity_id, std::shared_ptr<swganh::connection::ConnectionClient> client) {
     EntityClientMap& client_map = entity_clients();
 
     auto find_it = std::find_if(
         client_map.begin(), 
         client_map.end(), 
-        [client, entity_id] (EntityClientMap::value_type& conn_client) 
+        [entity_id] (EntityClientMap::value_type& entity_client) 
     {
-        return conn_client.second->player_id == entity_id;
+        return entity_client.first == entity_id;
     });
     // it's already here
     // @TODO: deal with this
@@ -134,8 +135,13 @@ bool SceneService::AddEntityClient(uint64_t entity_id, std::shared_ptr<swganh::c
     
     return true;
 }
+bool SceneService::RemoveEntityClient_(uint64_t entity_id)
+{
+    DLOG(WARNING) << "Removing entity client: " << entity_id;
+    return entity_clients().erase(entity_id);
+}
 
-bool SceneService::CreateSceneForPlayer(swganh::character::CharacterLoginData character)
+bool SceneService::AddPlayerToScene(swganh::character::CharacterLoginData character)
 {
     // create our player
     auto entity_errors = entity_builder()->BuildEntity(character.character_id, "Player", "anh.Player");
@@ -167,4 +173,30 @@ bool SceneService::CreateSceneForPlayer(swganh::character::CharacterLoginData ch
     character.client->session->SendMessage(scene_object_end);
 
     return true;
+}
+
+bool SceneService::LoadMap(const std::string& map_file) 
+{
+    // find map
+    // use terrain manager to load map
+    return true;
+}
+
+bool SceneService::LoadSceneEntities()
+{
+    // based on scene name, load the database information for each entity
+    //
+    return true;
+}
+
+bool SceneService::AddCreatureToScene(uint64_t creature_id)
+{
+    // add the specified creature to the scene??
+    // not sure if we need more than just the creature_id for this..
+    return true;
+}
+
+void SceneService::SetWeather(float cloud_x, float cloud_y, float cloud_z, uint32_t weather_type)
+{
+
 }

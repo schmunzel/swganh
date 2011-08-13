@@ -43,7 +43,10 @@ struct CharacterLoginData;
 
 namespace swganh {
 namespace scene {
-    
+
+/*
+*  @brief Scene Service manages the game space for a specific area (planet or instance generally)
+*/
 class BaseSceneService : public swganh::base::BaseService {
 public:    
     typedef tbb::concurrent_hash_map<
@@ -54,8 +57,47 @@ public:
     explicit BaseSceneService(std::shared_ptr<anh::app::KernelInterface> kernel) 
         : swganh::base::BaseService(kernel) {}
 
+    // API
+    /**
+    *  @brief Loadup Map for Scene
+    */
+    virtual bool LoadMap(const std::string& map_file) = 0;
+    /**
+    *  @brief Loads entities into the Scene
+    */
+    virtual bool LoadSceneEntities() = 0;
+
+    /**
+    *  @brief adds the player to the scene
+    */
+    virtual bool AddPlayerToScene(swganh::character::CharacterLoginData data) = 0;
+
+    /**
+    *  @brief adds the creature to the scene
+    */
+    virtual bool AddCreatureToScene(uint64_t creature_id) = 0;
+
+    /**
+    *  @brief sets the weather
+    */
+    virtual void SetWeather(float cloud_x, float cloud_y, float cloud_z, uint32_t weather_type) = 0;
+
+    /**
+    *  @brief Gets the Scene Name
+    */
+    const std::string& scene_name() { return scene_name_; }
+    void scene_name(const std::string& name) { scene_name_ = name; }
+
+    /**
+    *  @brief Returns if the Scene is a planet
+    */
+    bool IsPlanet() { return is_planet_; }
+    
+
     EntityClientMap& entity_clients() { return entity_clients_; }
 private:
+    std::string scene_name_;
+    bool is_planet_;
     EntityClientMap entity_clients_;
     BaseSceneService();
 };

@@ -35,16 +35,11 @@ class KernelInterface;
 
 namespace anh { namespace database { class DatabaseManagerInterface; } }
 
-namespace swganh {
-namespace connection {
-struct ConnectionClient;
-}}  // namespace swganh::connection
-
 namespace scene {
     
 class SceneService : public swganh::scene::BaseSceneService {
 public:
-    explicit SceneService(std::shared_ptr<anh::app::KernelInterface> kernel);
+    SceneService(std::shared_ptr<anh::app::KernelInterface> kernel, const std::string& scene_name);
     ~SceneService();
     
     anh::service::ServiceDescription GetServiceDescription();
@@ -56,14 +51,18 @@ public:
 
     void DescribeConfigOptions(boost::program_options::options_description& description);
 
-    bool AddEntityClient(uint64_t entity_id, std::shared_ptr<swganh::connection::ConnectionClient> connection_client);
-
     // SceneService API Methods
-    bool CreateSceneForPlayer(swganh::character::CharacterLoginData data);
+    bool AddPlayerToScene(swganh::character::CharacterLoginData data);
+    bool LoadMap(const std::string& map_file);
+    bool LoadSceneEntities();
+    bool AddCreatureToScene(uint64_t creature_id);
+    void SetWeather(float cloud_x, float cloud_y, float cloud_z, uint32_t weather_type);
 
     std::shared_ptr<anh::component::EntityManager> entity_manager() { return entity_manager_; }
     std::shared_ptr<anh::component::EntityBuilder> entity_builder() { return entity_builder_; }
 private:
+    bool AddEntityClient_(uint64_t entity_id, std::shared_ptr<swganh::connection::ConnectionClient> connection_client);
+    bool RemoveEntityClient_(uint64_t entity_id);
     std::shared_ptr<anh::component::EntityManager> entity_manager_;
     std::shared_ptr<anh::component::EntityBuilder> entity_builder_;
 };
