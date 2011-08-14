@@ -39,7 +39,7 @@ anh::ByteBuffer BaselineDelta::build_baseline(std::shared_ptr<Entity> e)
 		p.second(e, b);
 	});
 
-	b.writeAt<uint32_t>(18, b.write_position()-22);
+	b.writeAt<uint32_t>(19, b.write_position()-23);
 
 	return b;
 }

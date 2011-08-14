@@ -5,7 +5,7 @@ namespace baseline { namespace baseline_deltas {
 
 	void init_creo1(baseline::BaselineService* serv)
 	{
-		auto bd = std::make_shared<baseline::BaselineDelta>("OERC", 0x1, true);
+		auto bd = std::make_shared<baseline::BaselineDelta>("CREO", 0x1, true);
 
 		bd->attach_updatable(0, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
 			//Bank Credits
@@ -34,7 +34,7 @@ namespace baseline { namespace baseline_deltas {
 
 	void init_creo4(baseline::BaselineService* serv)
 	{
-		auto bd = std::make_shared<baseline::BaselineDelta>("OERC", 0x4, true);
+		auto bd = std::make_shared<baseline::BaselineDelta>("CREO", 0x4, true);
 
 		bd->attach_updatable(0, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
 			//Acceleration Multiplier Base
@@ -114,7 +114,7 @@ namespace baseline { namespace baseline_deltas {
 
 	void init_creo3(baseline::BaselineService* serv)
 	{
-		auto bd = std::make_shared<baseline::BaselineDelta>("OERC", 0x3, false);
+		auto bd = std::make_shared<baseline::BaselineDelta>("CREO", 0x3, false);
 		
 		bd->attach_updatable(0, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
 			//Complexity
@@ -215,7 +215,7 @@ namespace baseline { namespace baseline_deltas {
 
 	void init_creo6(baseline::BaselineService* serv)
 	{
-		auto bd = std::make_shared<baseline::BaselineDelta>("OERC", 0x6, true);
+		auto bd = std::make_shared<baseline::BaselineDelta>("CREO", 0x6, true);
 
 		bd->attach_updatable(0, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
 			//??

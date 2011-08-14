@@ -51,8 +51,6 @@
 #include "anh/service/service_manager.h"
 
 #include "swganh/scene/messages/cmd_start_scene.h"
-#include "swganh/scene/messages/scene_create_object_by_crc.h"
-#include "swganh/scene/messages/scene_end_baselines.h"
 
 #include "swganh/connection/base_connection_service.h"
 #include "swganh/connection/connection_client.h"
@@ -178,24 +176,9 @@ bool SceneService::AddPlayerToScene(swganh::character::CharacterLoginData charac
         
     character.client->session->SendMessage(start_scene);
 
-    SceneCreateObjectByCrc scene_object;
-    scene_object.object_id = character.character_id;
-    scene_object.orientation = character.orientation;
-    scene_object.position = character.position;
-    scene_object.object_crc = anh::memcrc(character.race_template);
-    // @TODO: Replace with configurable value
-    scene_object.byte_flag = 0;
-    
-    character.client->session->SendMessage(scene_object);
-
     // Send Baselines
     auto conn_client = getConnectionClient(character.character_id);
     baseline_service()->send_baselines_self(entity, conn_client);
-
-    SceneEndBaselines scene_object_end;
-    scene_object_end.object_id = character.character_id;
-    
-    character.client->session->SendMessage(scene_object_end);
 
     return true;
 }
