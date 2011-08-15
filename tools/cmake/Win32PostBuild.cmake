@@ -104,4 +104,11 @@ add_custom_command(
     POST_BUILD
     COMMAND xcopy "${WIN_PROJECT_SOURCE_DIR}\\..\\data\\scripts" "${WIN_PROJECT_BINARY_DIR}\\bin\\$\(Configuration\)\\scripts" /D /I /Y /s
     VERBATIM
-)    
+)  
+
+add_custom_command(
+    TARGET DEPS
+    POST_BUILD
+    COMMAND xcopy "${WIN_PROJECT_SOURCE_DIR}\\..\\data\\templates" "${WIN_PROJECT_BINARY_DIR}\\bin\\$\(Configuration\)\\templates" /D /I /Y /s
+    VERBATIM
+)     
