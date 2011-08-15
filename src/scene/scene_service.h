@@ -52,6 +52,7 @@ public:
     void DescribeConfigOptions(boost::program_options::options_description& description);
 
     // SceneService API Methods
+    bool CreateScene();
     bool AddPlayerToScene(swganh::character::CharacterLoginData data);
     bool LoadMap(const std::string& map_file);
     bool LoadSceneEntities();

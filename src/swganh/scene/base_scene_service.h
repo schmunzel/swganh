@@ -59,6 +59,10 @@ public:
 
     // API
     /**
+    *  @brief creates the Scene that all entities then load
+    */
+    virtual bool CreateScene() = 0;
+    /**
     *  @brief Loadup Map for Scene
     */
     virtual bool LoadMap(const std::string& map_file) = 0;

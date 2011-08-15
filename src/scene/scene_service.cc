@@ -160,6 +160,11 @@ bool SceneService::RemoveEntityClient_(uint64_t entity_id)
     DLOG(WARNING) << "Removing entity client: " << entity_id;
     return entity_clients().erase(entity_id);
 }
+bool SceneService::CreateScene() 
+{
+
+    return true;
+}
 
 bool SceneService::AddPlayerToScene(swganh::character::CharacterLoginData character)
 {
