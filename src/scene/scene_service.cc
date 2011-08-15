@@ -106,6 +106,26 @@ void SceneService::subscribe() {
         AddEntityClient_(select_character->character_id, select_character->client);
         return AddPlayerToScene(*select_character);
     });
+
+    kernel()->GetEventDispatcher()->subscribe("NetworkSessionRemoved", [this] (shared_ptr<EventInterface> incoming_event) -> bool {
+        auto session_removed = std::static_pointer_cast<anh::event_dispatcher::BasicEvent<anh::network::soe::SessionData>>(incoming_event);
+        
+        EntityClientMap& client_map = entity_clients();
+
+        auto find_it = std::find_if(
+            client_map.begin(), 
+            client_map.end(), 
+            [session_removed] (swganh::scene::BaseSceneService::EntityClientMap::value_type& entity_client) 
+        {
+            return entity_client.second->session == session_removed->session;
+        });
+        
+        if (find_it != client_map.end()){
+            RemoveEntityClient_((*find_it).first);
+        }
+
+        return true;
+    });
 }
 
 void SceneService::DescribeConfigOptions(boost::program_options::options_description& description) {}
