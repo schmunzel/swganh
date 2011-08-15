@@ -101,20 +101,23 @@ TEST_F(EntityBuilderTests, CannotRegisterTwoAttributeMapper) {
 ///// Test to make sure we are not able to construct an entity that doesnt have a
 ///// template.
 TEST_F(EntityBuilderTests, CannotBuildEntityWithoutTemplate) {
-    EXPECT_EQ(entity_builder->BuildEntity(entity_id_, "Mock", "test.Mock"), BUILD_FAILED);
+	auto f = [] () -> std::uint64_t {return 0L;};
+	EXPECT_EQ(entity_builder->BuildEntity(entity_id_, "Mock", "test.Mock", f), BUILD_FAILED);
 }
 //
 ///// Make sure that if there are no component registrations whatsoever we fail to build the entity
 TEST_F(EntityBuilderTests, BuildWithMissingComponentRegistration) {
     entity_builder->Init("templates.temp");
-    EXPECT_EQ(entity_builder->BuildEntity(entity_id_, "Mock", "test.Mock"), BUILD_FAILED);
+	auto f = [] () -> std::uint64_t {return 0L;};
+    EXPECT_EQ(entity_builder->BuildEntity(entity_id_, "Mock", "test.Mock", f), BUILD_FAILED);
 }
 //
 ///// verifies we can still build an entity and use it, if there is no DBMapper attached
 TEST_F(EntityBuilderTests, BuildSingleComponentEntityNoDBMapper) {
     entity_builder->Init("templates.temp");
     EXPECT_TRUE(entity_builder->RegisterCreator("Mock", [=](const EntityId& id){ return std::make_shared<MockComponent>(); }));
-    EXPECT_EQ(entity_builder->BuildEntity(entity_id_, "mock_entity", "test.Mock"), BUILD_INCOMPLETE);
+	auto f = [] () -> std::uint64_t {return 0L;};
+    EXPECT_EQ(entity_builder->BuildEntity(entity_id_, "mock_entity", "test.Mock", f), BUILD_INCOMPLETE);
     std::shared_ptr<MockComponentInterface> component = 
         entity_manager->QueryInterface<MockComponentInterface>(entity_id_, "Mock");
     EXPECT_EQ(component->component_type(), "NullMock");
@@ -127,7 +130,8 @@ TEST_F(EntityBuilderTests, BuildSingleComponentEntityWithAttributeMapper) {
     EXPECT_TRUE(entity_builder->RegisterAttributeMapper("anh.mock", std::make_shared<testing::NiceMock<MockAttributeMapper>>()));
     EXPECT_TRUE(entity_builder->CreatorExists("anh.mock"));
     EXPECT_TRUE(entity_builder->AttributeMapperExists("anh.mock"));
-    EXPECT_EQ(entity_builder->BuildEntity(entity_id_, "mock_entity", "test.Mock"), BUILD_SUCCESSFUL);
+	auto f = [] () -> std::uint64_t {return 0L;};
+    EXPECT_EQ(entity_builder->BuildEntity(entity_id_, "mock_entity", "test.Mock", f), BUILD_SUCCESSFUL);
     std::shared_ptr<MockComponentInterface> component = 
         entity_manager->QueryInterface<MockComponentInterface>(entity_id_, "Mock");
     EXPECT_EQ(component->component_type(), "NullMock");

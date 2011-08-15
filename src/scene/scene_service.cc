@@ -58,6 +58,9 @@
 #include "swganh/connection/connection_client.h"
 #include "swganh/connection/messages/heart_beat.h"
 
+#include "swganh/containers/universe_container_component.h"
+#include "swganh/transform/transform_component.h"
+
 using namespace swganh::scene;
 using namespace swganh::scene::messages;
 using namespace swganh::connection::messages;
@@ -94,7 +97,11 @@ service::ServiceDescription SceneService::GetServiceDescription() {
     return service_description;
 }
 
-void SceneService::onStart() {}
+void SceneService::onStart() 
+{
+	RegisterComponentCreators();
+	CreateScene();
+}
 
 void SceneService::onStop() {}
 
@@ -129,6 +136,17 @@ void SceneService::subscribe() {
 }
 
 void SceneService::DescribeConfigOptions(boost::program_options::options_description& description) {}
+
+void SceneService::RegisterComponentCreators()
+{
+	entity_builder_->RegisterCreator("universe_container", [] (const EntityId&) -> std::shared_ptr<swganh::containers::universe_container_component> {
+		return std::make_shared<swganh::containers::universe_container_component>(16384, 128, 128, false);
+	});
+
+	entity_builder_->RegisterCreator("Transform", [] (const EntityId&) -> std::shared_ptr<swganh::transform::TransformComponent> {
+		return std::make_shared<swganh::transform::TransformComponent>();
+	});
+}
 
 std::shared_ptr<swganh::connection::ConnectionClient> SceneService::getConnectionClient(uint64_t entity_id)
 {
@@ -182,6 +200,7 @@ bool SceneService::RemoveEntityClient_(uint64_t entity_id)
 }
 bool SceneService::CreateScene() 
 {
+	entity_builder_->BuildEntity(nullptr, 0, "universe", "", [] () -> std::uint64_t { return 0; });
 
     return true;
 }
@@ -189,7 +208,8 @@ bool SceneService::CreateScene()
 bool SceneService::AddPlayerToScene(swganh::character::CharacterLoginData character)
 {
     // create our player
-    auto entity_errors = entity_builder()->BuildEntity(character.character_id, "Player", "anh.Player");
+	std::uint64_t i = character.character_id;
+    auto entity_errors = entity_builder()->BuildEntity(character.character_id, "Player", "anh.Player", [&] () -> std::uint64_t {return ++i;});
     auto entity = entity_manager()->GetEntity(character.character_id);
     
     CmdStartScene start_scene;

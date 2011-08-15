@@ -22,9 +22,20 @@
 #include <glog/logging.h>
 #include <boost/algorithm/string.hpp>
 #include <anh/component/entity_manager.h>
+#include <swganh/containers/container_component_interface.h>
+
+namespace swganh { namespace containers {
+	std::shared_ptr<NullContainerComponent> ContainerComponentInterface::NullComponent = std::make_shared<NullContainerComponent>();
+	std::shared_ptr<NullContainerPermission> NullContainerComponent::null_permissions = std::make_shared<NullContainerPermission>();
+}
+}
 
 namespace anh {
 namespace component {
+
+	std::map<ComponentType, std::shared_ptr<anh::component::AttributeMapperInterface<ComponentInterface>>> EntityBuilder::component_mappers_;
+	std::map<EntityType, boost::property_tree::ptree> EntityBuilder::entity_templates_;
+	std::map<ComponentType, ComponentCreator> EntityBuilder::component_creators_;
 
 EntityBuilder::EntityBuilder(std::shared_ptr<EntityManager> entity_manager)
     : entity_manager_(entity_manager)
@@ -53,10 +64,19 @@ void EntityBuilder::Deinit(void)
 {
 }
 
-EntityBuildErrors EntityBuilder::BuildEntity(const EntityId& entity_id, const EntityType& type, const std::string& name)
+EntityBuildErrors EntityBuilder::BuildEntity(std::uint64_t parent, const EntityType& type, const std::string& name, std::function<std::uint64_t()> id_getter)
+{
+	return BuildEntity(entity_manager_->GetEntity(parent), type, name, id_getter);
+}
+
+EntityBuildErrors EntityBuilder::BuildEntity(std::shared_ptr<Entity> parent, const EntityType& type, const std::string& name, std::function<std::uint64_t()> id_getter)
+{
+	return BuildEntity(parent, id_getter(), type, name, id_getter);
+}
+
+EntityBuildErrors EntityBuilder::BuildEntity(std::shared_ptr<Entity> parent, std::uint64_t id, const EntityType& type, const std::string& name, std::function<std::uint64_t()> id_getter)
 {
     EntityBuildErrors status = BUILD_SUCCESSFUL;
-    
     EntityTemplates::iterator i = entity_templates_.find(type);
 
     if(i == entity_templates_.end())
@@ -69,11 +89,11 @@ EntityBuildErrors EntityBuilder::BuildEntity(const EntityId& entity_id, const En
     EntityTagSets::iterator ent_tag_iter = entity_tag_sets_.find(type);
     if(ent_tag_iter != entity_tag_sets_.end())
     {
-        entity.reset(new Entity(entity_id, name, ent_tag_iter->second));
+        entity.reset(new Entity(id, name, ent_tag_iter->second));
     }
     else
     {
-        entity.reset(new Entity(entity_id, name));
+        entity.reset(new Entity(id, name));
     }
 
 
@@ -81,7 +101,6 @@ EntityBuildErrors EntityBuilder::BuildEntity(const EntityId& entity_id, const En
     for(boost::property_tree::ptree::iterator xml_component = pt.get_child("entity").begin(); xml_component != pt.get_child("entity").end(); xml_component++) {
         if(xml_component->first.compare("component") == 0)
         {
-
             // Grab the component type.
             ComponentType type(xml_component->second.get<std::string>("<xmlattr>.type").c_str());
 
@@ -92,7 +111,7 @@ EntityBuildErrors EntityBuilder::BuildEntity(const EntityId& entity_id, const En
                 continue;
             }
 
-            std::shared_ptr<ComponentInterface> component = (*creators_iter).second(entity_id);
+			std::shared_ptr<ComponentInterface> component = (*creators_iter).second(id);
             component->Init(xml_component->second);
             
             // Search for a component mapper, if it exists, call it.
@@ -105,12 +124,23 @@ EntityBuildErrors EntityBuilder::BuildEntity(const EntityId& entity_id, const En
                 (*mapper_iter).second->Populate(component);
             }
         }
+		else if(xml_component->first.compare("entity") == 0)
+		{
+			ComponentType type(xml_component->second.get<std::string>("<xmlattr>.type").c_str());
+			if(BuildEntity(entity, type, "", id_getter) == BUILD_INCOMPLETE)
+			{
+				status = BUILD_INCOMPLETE;
+			}
+		}
     }
     // if we can't add the entity for some reason, this is a total failure.
     if (!entity_manager_->AddEntity(entity))
     {
         status = BUILD_FAILED;
     }
+
+	if(parent != nullptr)
+		parent->QueryInterface<swganh::containers::ContainerComponentInterface>("Container")->insert(nullptr, entity, true);
 
     return status;
 }

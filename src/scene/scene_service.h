@@ -53,6 +53,7 @@ public:
 
     // SceneService API Methods
     bool CreateScene();
+	void RegisterComponentCreators();
     bool AddPlayerToScene(swganh::character::CharacterLoginData data);
     bool LoadMap(const std::string& map_file);
     bool LoadSceneEntities();

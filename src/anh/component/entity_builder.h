@@ -79,7 +79,9 @@ public:
      *
      * @returns see @EntityBuildErrors
 	 */
-    EntityBuildErrors BuildEntity(const EntityId& entity_id, const EntityType& type, const std::string& name);
+    EntityBuildErrors BuildEntity(std::shared_ptr<Entity> parent, const EntityType& type, const std::string& name, std::function<std::uint64_t()> id_getter);
+	EntityBuildErrors BuildEntity(std::uint64_t parent, const EntityType& type, const std::string& name, std::function<std::uint64_t()> id_getter);
+	EntityBuildErrors BuildEntity(std::shared_ptr<Entity> parent, std::uint64_t id, const EntityType& type, const std::string& name, std::function<std::uint64_t()> id_getter);
 
 	/**
 	 * @brief Registers an attribute maper that will be called on @BuildEntity
@@ -159,11 +161,11 @@ private:
 	typedef std::map<EntityType, TagSet>											EntityTagSets;
 	typedef std::pair<EntityType, TagSet>											EntityTagSetPair;
     // map holding the component mappers and their implementation
-	ComponentAttributeMappers	component_mappers_;
+	static ComponentAttributeMappers	component_mappers_;
     // map holding the entity templates and their xml stored in property tree
-	EntityTemplates		entity_templates_;
+	static EntityTemplates		entity_templates_;
     // map holding the component creators and their implmentation
-	ComponentCreators	component_creators_;
+	static ComponentCreators	component_creators_;
     // map holding the TagSet for a given EntityType
 	EntityTagSets		entity_tag_sets_;
 	
