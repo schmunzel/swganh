@@ -19,7 +19,6 @@ namespace baseline {
 		virtual std::shared_ptr<swganh::baseline::BaselineDeltaInterface> get_baseline_delta(anh::HashString name);
 		virtual void detach_baseline_delta(anh::HashString name);
         // simply a helper function
-        virtual void send_create_by_crc(std::shared_ptr<anh::component::Entity> e, std::shared_ptr<swganh::connection::ConnectionClient> c);
         virtual void send_baselines_self(std::shared_ptr<anh::component::Entity> e, std::shared_ptr<swganh::connection::ConnectionClient> c);
 		virtual void send_baselines(std::shared_ptr<anh::component::Entity> e, std::shared_ptr<swganh::connection::ConnectionClient> c, std::list<std::shared_ptr<anh::component::Entity>> recieving_entities);
 		virtual void send_deltas(std::shared_ptr<anh::component::Entity> e, std::list<std::shared_ptr<anh::component::Entity>> recieving_entities);

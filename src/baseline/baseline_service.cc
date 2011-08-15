@@ -5,7 +5,6 @@
 
 #include <anh/app/kernel_interface.h>
 #include <anh/component/entity.h>
-#include "anh/crc.h"
 #include <anh/event_dispatcher/event_dispatcher.h>
 #include "anh/network/soe/session.h"
 
@@ -13,7 +12,6 @@
 #include <swganh/baseline/baseline_event.h>
 #include <swganh/baseline/delta_event.h>
 #include <swganh/scene/messages/scene_end_baselines.h>
-#include "swganh/scene/messages/scene_create_object_by_crc.h"
 #include <swganh/connection/connection_client.h>
 
 using namespace baseline;
@@ -33,19 +31,6 @@ void BaselineService::attach_baseline_delta(anh::HashString name, std::shared_pt
 void BaselineService::detach_baseline_delta(anh::HashString name)
 {
 	lookup_.erase(name);
-}
-void BaselineService::send_create_by_crc(std::shared_ptr<anh::component::Entity> e, std::shared_ptr<swganh::connection::ConnectionClient> c)
-{
-    swganh::scene::messages::SceneCreateObjectByCrc scene_object;
-    scene_object.object_id = e->id();
-    scene_object.orientation = glm::quat(0,0,0,0);
-    scene_object.position = glm::vec3(0,0,0);
-    scene_object.object_crc = anh::memcrc("object/creature/player/shared_human_male.iff");
-    // @TODO: Replace with configurable value
-    scene_object.byte_flag = 0;
-    
-    c->session->SendMessage(scene_object);
-
 }
 void BaselineService::send_baselines_self(std::shared_ptr<anh::component::Entity> e, std::shared_ptr<swganh::connection::ConnectionClient> c) 
 {
@@ -72,7 +57,6 @@ void BaselineService::send_baselines(std::shared_ptr<Entity> e, std::shared_ptr<
 
 	if(generated_baselines.size() > 0)
 	{
-        send_create_by_crc(e, c);
 		//Send Baselines to recieving entities
 		std::vector<std::pair<bool, anh::ByteBuffer>>::iterator base_itr;
 		std::vector<std::pair<bool, anh::ByteBuffer>>::iterator base_end = generated_baselines.end();
