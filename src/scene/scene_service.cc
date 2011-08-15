@@ -143,7 +143,7 @@ void SceneService::RegisterComponentCreators()
 		return std::make_shared<swganh::containers::universe_container_component>(16384, 128, 128, false);
 	});
 
-	entity_builder_->RegisterCreator("Transform", [] (const EntityId&) -> std::shared_ptr<swganh::transform::TransformComponent> {
+	entity_builder_->RegisterCreator("transform", [] (const EntityId&) -> std::shared_ptr<swganh::transform::TransformComponent> {
 		return std::make_shared<swganh::transform::TransformComponent>();
 	});
 }
@@ -209,13 +209,13 @@ bool SceneService::AddPlayerToScene(swganh::character::CharacterLoginData charac
 {
     // create our player
 	std::uint64_t i = character.character_id;
-    auto entity_errors = entity_builder()->BuildEntity(character.character_id, "Player", "anh.Player", [&] () -> std::uint64_t {return ++i;});
+    auto entity_errors = entity_builder()->BuildEntity(0, "player", "anh.Player", [&] () -> std::uint64_t {return i++;});
     auto entity = entity_manager()->GetEntity(character.character_id);
     
     CmdStartScene start_scene;
     // @TODO: Replace with configurable value
     start_scene.ignore_layout = 0;
-    start_scene.character_id = character.character_id;
+    start_scene.character_id = entity->id();
     start_scene.terrain_map = character.terrain_map;
     start_scene.position = character.position;
     start_scene.shared_race_template = "object/creature/player/shared_" + character.race + "_" + character.gender + ".iff";
@@ -223,7 +223,7 @@ bool SceneService::AddPlayerToScene(swganh::character::CharacterLoginData charac
         
     character.client->session->SendMessage(start_scene);
     SceneCreateObjectByCrc scene_object;
-    scene_object.object_id = character.character_id;
+    scene_object.object_id = entity->id();
     scene_object.orientation = character.orientation;
     scene_object.position = character.position;
     scene_object.object_crc = anh::memcrc(character.race_template);
