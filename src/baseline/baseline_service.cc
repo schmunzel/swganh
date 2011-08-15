@@ -40,6 +40,9 @@ void BaselineService::send_baselines_self(std::shared_ptr<anh::component::Entity
 }
 void BaselineService::send_baselines(std::shared_ptr<Entity> e, std::shared_ptr<swganh::connection::ConnectionClient> c, std::list<std::shared_ptr<anh::component::Entity>> recieving_entities)
 {
+	if(e == nullptr)
+		return;
+
 	//Generate Relevant Baselines
 	std::vector<std::pair<bool, anh::ByteBuffer>> generated_baselines;
 
