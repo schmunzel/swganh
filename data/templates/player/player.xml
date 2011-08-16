@@ -1,2 +1,6 @@
 <entity type='player' tags='creature' template='object/creature/player/shared_human_male.iff'>
+	<component type='transform'>
+	</component>
+	<component type='connection'>
+	</component>
 </entity>

@@ -113,6 +113,8 @@ EntityBuildErrors EntityBuilder::BuildEntity(std::shared_ptr<Entity> parent, std
 
 			std::shared_ptr<ComponentInterface> component = (*creators_iter).second(id);
             component->Init(xml_component->second);
+            // lets attatch the component
+            entity->AttachComponent(component);
             
             // Search for a component mapper, if it exists, call it.
             ComponentAttributeMappers::iterator mapper_iter = component_mappers_.find(type);

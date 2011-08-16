@@ -13,6 +13,7 @@
 #include <swganh/baseline/delta_event.h>
 #include <swganh/scene/messages/scene_end_baselines.h>
 #include <swganh/connection/connection_client.h>
+#include "swganh/component/connection_component.h"
 
 using namespace baseline;
 using namespace swganh::baseline;
@@ -32,18 +33,17 @@ void BaselineService::detach_baseline_delta(anh::HashString name)
 {
 	lookup_.erase(name);
 }
-void BaselineService::send_baselines_self(std::shared_ptr<anh::component::Entity> e, std::shared_ptr<swganh::connection::ConnectionClient> c) 
+void BaselineService::send_baselines_self(std::shared_ptr<anh::component::Entity> e) 
 {
     std::list<std::shared_ptr<anh::component::Entity>> self;
     self.push_back(e);
-    send_baselines(e, c, self);
+    send_baselines(e, self);
 }
-void BaselineService::send_baselines(std::shared_ptr<Entity> e, std::shared_ptr<swganh::connection::ConnectionClient> c, std::list<std::shared_ptr<anh::component::Entity>> recieving_entities)
+void BaselineService::send_baselines(std::shared_ptr<Entity> e, std::list<std::shared_ptr<anh::component::Entity>> recieving_entities)
 {
 	if(e == nullptr)
 		return;
-
-	//Generate Relevant Baselines
+    //Generate Relevant Baselines
 	std::vector<std::pair<bool, anh::ByteBuffer>> generated_baselines;
 
 	std::set<anh::HashString> tags = e->Tags();
@@ -70,14 +70,20 @@ void BaselineService::send_baselines(std::shared_ptr<Entity> e, std::shared_ptr<
 			for(base_itr = generated_baselines.begin(); base_itr != base_end; ++base_itr) {
 				if(!base_itr->first || (base_itr->first && *recv_itr == e))
 				{
-					c->session->SendMessage((*base_itr).second);
+                    auto connection = (*recv_itr)->QueryInterface<swganh::component::ConnectionComponentInterface>("connection");
+                    if (connection->session() != nullptr) {
+                        connection->session()->SendMessage((*base_itr).second);
+                    }
+                    else
+                        DLOG(WARNING) << "Entity " << (*recv_itr)->id() << " has an invalid session";
 				}
 			}
+            // send end baselines to all receiving entities
+            auto connection = (*recv_itr)->QueryInterface<swganh::component::ConnectionComponentInterface>("connection");
+            swganh::scene::messages::SceneEndBaselines seb;
+            seb.object_id = (*recv_itr)->id();
+            connection->session()->SendMessage(seb);
 		}
-        // send end baseline
-        swganh::scene::messages::SceneEndBaselines seb;
-        seb.object_id = e->id();
-        c->session->SendMessage(seb);
 	}
 	else
 	{
@@ -120,7 +126,8 @@ void BaselineService::send_deltas(std::shared_ptr<Entity> e, std::list<std::shar
 		for(base_itr = generated_deltas.begin(); base_itr != base_end; ++base_itr) {
 			if(!base_itr->first || (base_itr->first && *recv_itr == e))
 			{
-				//Send
+				auto connection = (*recv_itr)->QueryInterface<swganh::component::ConnectionComponentInterface>("connection");
+                connection->session()->SendMessage((*base_itr).second);
 			}
 		}
 	}

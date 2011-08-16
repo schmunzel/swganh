@@ -60,6 +60,7 @@
 
 #include "swganh/containers/universe_container_component.h"
 #include "swganh/transform/transform_component.h"
+#include "swganh/component/connection_component.h"
 
 using namespace swganh::scene;
 using namespace swganh::scene::messages;
@@ -99,21 +100,20 @@ service::ServiceDescription SceneService::GetServiceDescription() {
 
 void SceneService::onStart() 
 {
-	RegisterComponentCreators();
 	CreateScene();
 }
 
 void SceneService::onStop() {}
 
 void SceneService::subscribe() {
+    RegisterComponentCreators();
     auto connection_service = std::static_pointer_cast<BaseConnectionService>(kernel()->GetServiceManager()->GetService("ConnectionService"));
     
     kernel()->GetEventDispatcher()->subscribe("SelectCharacterLogin",[this](shared_ptr<EventInterface> incoming_event) ->bool {
         auto select_character = static_pointer_cast<BasicEvent<swganh::character::CharacterLoginData>>(incoming_event);
-        AddEntityClient_(select_character->character_id, select_character->client);
         return AddPlayerToScene(*select_character);
     });
-
+    
     kernel()->GetEventDispatcher()->subscribe("NetworkSessionRemoved", [this] (shared_ptr<EventInterface> incoming_event) -> bool {
         auto session_removed = std::static_pointer_cast<anh::event_dispatcher::BasicEvent<anh::network::soe::SessionData>>(incoming_event);
         
@@ -129,6 +129,9 @@ void SceneService::subscribe() {
         
         if (find_it != client_map.end()){
             RemoveEntityClient_((*find_it).first);
+            // remove it from the component as well
+            // we should probably send a ld message to the client, or something similar
+            entity_manager()->GetEntity((*find_it).first)->DetachComponent("connection");
         }
 
         return true;
@@ -146,6 +149,9 @@ void SceneService::RegisterComponentCreators()
 	entity_builder_->RegisterCreator("transform", [] (const EntityId&) -> std::shared_ptr<swganh::transform::TransformComponent> {
 		return std::make_shared<swganh::transform::TransformComponent>();
 	});
+    entity_builder_->RegisterCreator("connection", [] (const EntityId&) -> std::shared_ptr<swganh::component::ConnectionComponent> {
+        return std::make_shared<swganh::component::ConnectionComponent>();
+    });
 }
 
 std::shared_ptr<swganh::connection::ConnectionClient> SceneService::getConnectionClient(uint64_t entity_id)
@@ -189,7 +195,7 @@ bool SceneService::AddEntityClient_(uint64_t entity_id, std::shared_ptr<swganh::
     client_map.insert(a, entity_id);
     a->second = client;
 
-    DLOG(WARNING) << GetServiceDescription().name() << " #" << GetServiceDescription().id() <<  " currently has ("<< client_map.size() << ") entities mapped to clients";
+    DLOG(WARNING) << GetServiceDescription().name() <<  " currently has ("<< client_map.size() << ") entities mapped to clients";
     
     return true;
 }
@@ -211,6 +217,11 @@ bool SceneService::AddPlayerToScene(swganh::character::CharacterLoginData charac
 	std::uint64_t i = character.character_id;
     auto entity_errors = entity_builder()->BuildEntity(0, "player", "anh.Player", [&] () -> std::uint64_t {return i++;});
     auto entity = entity_manager()->GetEntity(character.character_id);
+    auto connection = entity->QueryInterface<swganh::component::ConnectionComponentInterface>("connection");
+    // setup the connection component
+    connection->account_id(character.client->account_id);
+    connection->player_id(character.client->player_id);
+    connection->session(character.client->session);
     
     CmdStartScene start_scene;
     // @TODO: Replace with configurable value
@@ -232,9 +243,7 @@ bool SceneService::AddPlayerToScene(swganh::character::CharacterLoginData charac
     character.client->session->SendMessage(scene_object);
 
     // Send Baselines
-    auto conn_client = getConnectionClient(character.character_id);
-    baseline_service()->send_baselines_self(entity, conn_client);
-
+    baseline_service()->send_baselines_self(entity);
     return true;
 }
 
