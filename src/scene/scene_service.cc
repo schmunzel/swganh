@@ -111,6 +111,16 @@ void SceneService::onStop() {}
 
 void SceneService::HandleTransform_(std::shared_ptr<swganh::connection::ConnectionClient> client, const swganh::scene::messages::DataTransform& transform)
 {
+    // get entity
+    auto entity = entity_manager()->GetEntity(transform.object_id);
+    if (entity)
+    {
+        auto transform_comp = entity->QueryInterface<swganh::transform::TransformComponentInterface>("Transform");
+        transform_comp->position(transform.x, transform.y, transform.z);
+        transform_comp->rotation(transform.rX, transform.rY, transform.rZ, transform.rW);
+        transform_comp->speed(transform.speed);
+    }
+
     DLOG(WARNING) << "HandleTransform Triggered";
 }
 

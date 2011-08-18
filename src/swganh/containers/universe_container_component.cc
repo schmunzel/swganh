@@ -1,14 +1,16 @@
 #include "universe_container_component.h"
+
+#include <boost/thread/locks.hpp>
+#include <glog//logging.h>
+#include <limits>
+#include <math.h>
+
 #include <swganh/transform/transform_component.h>
 #include <swganh/component/connection_component_interface.h>
 #include <anh/component/entity.h>
 
-#include <limits>
-#include <math.h>
-
 #include <swganh/baseline/baseline_event.h>
 
-#include <boost/thread/locks.hpp>
 
 using namespace swganh::transform;
 using namespace swganh::baseline;
@@ -31,7 +33,6 @@ universe_container_component::universe_container_component(float map_size, float
 {
 	construct_();
 }
-
 void universe_container_component::Init(boost::property_tree::ptree& pt)
 {
 	float map_size = pt.get<float>("map_size", 16384);
@@ -43,7 +44,9 @@ void universe_container_component::Init(boost::property_tree::ptree& pt)
 	buckets_per_row_ = ceil(map_size / bucket_width_);
 	buckets_sq = buckets_per_row_*buckets_per_row_;
 
+    DLOG(WARNING) << "Started Loading Universe...";
 	construct_();
+    DLOG(WARNING) << "Finished Loading Universe...";
 }
 
 void universe_container_component::construct_()

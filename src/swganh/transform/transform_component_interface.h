@@ -55,6 +55,7 @@ class TransformComponentInterface : public anh::component::BaseComponent {
     virtual glm::quat rotation() = 0;
     virtual void rotation(const float x, const float y, const float z, const float w) = 0;
     virtual const float speed() = 0;
+    virtual void speed(const float speed) = 0;
 
     // convenience commands
     virtual void rotate(const float& degrees) = 0;
@@ -93,6 +94,7 @@ public:
     void move_back(const float& distance){};
     float rotation_angle() { return 0.0f; }
     const float speed() { return speed_; }
+    void speed(const float speed) {};
 
 	void insert_region(std::shared_ptr<swganh::regions::RegionInterface> region) {}
 	void remove_region(std::shared_ptr<swganh::regions::RegionInterface> region) {}

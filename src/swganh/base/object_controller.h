@@ -32,11 +32,13 @@ namespace base {
 template<typename T>
 struct ObjectControllerMessage {
 
-        void serialize(anh::ByteBuffer& buffer) const {
+    static uint32_t opcode() { return 0x80CE5E46; }
+
+    void serialize(anh::ByteBuffer& buffer) const {
         buffer.write(anh::hostToLittle(T::priority()));
-        buffer.write(0x80CE5E46);
+        buffer.write(opcode());
         buffer.write<uint32_t>(0x0B); // unknown
-        buffer.write(T::opcode());
+        buffer.write(T::sub_opcode());
         buffer.write<uint64_t>(object_id);
         buffer.write(tick_count);
         onSerialize(buffer);
@@ -44,16 +46,16 @@ struct ObjectControllerMessage {
     
     void deserialize(anh::ByteBuffer buffer) {
         uint16_t priority = anh::littleToHost(buffer.read<uint16_t>());
-        uint32_t base_opcode = buffer.read<uint32_t>();
+        uint32_t opcode = buffer.read<uint32_t>();
         uint32_t unk = buffer.read<uint32_t>();
-        if (base_opcode != 0x80CE5E46) {
-            assert(true && "base_opcodes don't match, expected:" + base_opcode );
+        if (opcode != 0x80CE5E46) {
+            assert(true && "opcodes don't match, expected:" + opcode );
             return;
         }
         object_id = buffer.read<uint64_t>();
-        uint32_t opcode = buffer.read<uint32_t>();
-        if (opcode != T::opcode()) {
-            assert(true && "opcodes don't match, expected:" + opcode);
+        uint32_t sub_opcode = buffer.read<uint32_t>();
+        if (sub_opcode != T::sub_opcode()) {
+            assert(true && "sub_opcodes don't match, expected:" + sub_opcode);
         }
         tick_count = buffer.read<uint32_t>();
         onDeserialize(std::move(buffer));

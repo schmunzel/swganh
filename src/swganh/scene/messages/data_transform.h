@@ -30,7 +30,7 @@ namespace messages {
     
 struct DataTransform : public swganh::base::ObjectControllerMessage<DataTransform> {
     static uint16_t priority() { return 1; }
-    static uint32_t opcode() { return 0x00000071; }
+    static uint32_t sub_opcode() { return 0x00000071; }
     float rX, rY, rZ, rW, x, y, z, speed;
 
     void onSerialize(anh::ByteBuffer& buffer) const 
