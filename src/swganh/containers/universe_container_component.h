@@ -55,7 +55,10 @@ namespace containers
 				size_t id_;
 		};
 
+		universe_container_component();
 		universe_container_component(float map_size, float bucket_size, float viewing_range, bool _3_dimensional_);
+
+		void Init(boost::property_tree::ptree& pt);
 
 		//Region Methods
 		void insert(std::shared_ptr<swganh::regions::RegionInterface> region);
@@ -80,26 +83,6 @@ namespace containers
 
 		virtual void make_unaware(std::shared_ptr<anh::component::Entity> what);
 
-		//Permission Methods
-		virtual bool permissions_can_view(std::shared_ptr<anh::component::Entity> who) { return true; }
-		virtual bool permissions_can_insert(std::shared_ptr<anh::component::Entity> who, std::shared_ptr<anh::component::Entity> what) { return true; }
-		virtual bool permissions_can_insert(std::shared_ptr<anh::component::Entity> who, std::shared_ptr<anh::component::Entity> what, const std::set<anh::HashString>& arrangement_to_use) { return false; }
-		virtual bool permissions_can_remove(std::shared_ptr<anh::component::Entity> who, std::shared_ptr<anh::component::Entity> what) { return true; }
-
-		virtual bool permissions_grant_view(std::shared_ptr<anh::component::Entity> who) { return false; }
-		virtual bool permissions_revoke_view(std::shared_ptr<anh::component::Entity> who) { return false; }
-		virtual bool permissions_grant_insert(std::shared_ptr<anh::component::Entity> who) { return false; }
-		virtual bool permissions_revoke_insert(std::shared_ptr<anh::component::Entity> who) { return false; }
-		virtual bool permissions_grant_removal(std::shared_ptr<anh::component::Entity> who) { return false; }
-		virtual bool permissions_revoke_removal(std::shared_ptr<anh::component::Entity> who) { return false; }
-
-		virtual bool permissions_grant_view(std::string argument) { return false; }
-		virtual bool permissions_revoke_view(std::string argument) { return false; }
-		virtual bool permissions_grant_insert(std::string argument) { return false; }
-		virtual bool permissions_revoke_insert(std::string argument) { return false; }
-		virtual bool permissions_grant_removal(std::string argument) { return false; }
-		virtual bool permissions_revoke_removal(std::string argument) { return false; }
-
 		//Size/Capacity Methods
 		virtual bool empty();
 		virtual bool full();
@@ -117,6 +100,8 @@ namespace containers
 		virtual bool intrl_insert_(std::shared_ptr<anh::component::Entity> what, std::shared_ptr<ContainerComponentInterface> old_container);
 
 	private:
+		void construct_();
+
 		std::set<size_t> buckets_within_verts_(const std::vector<glm::vec3>& region);
 
 		void generate_relevant_buckets_(int depth, std::shared_ptr<universe_bucket> bucket);

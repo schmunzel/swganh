@@ -11,9 +11,12 @@
 #include <swganh/baseline/baseline_delta_interface.h>
 #include <swganh/baseline/baseline_event.h>
 #include <swganh/baseline/delta_event.h>
+#include <swganh/scene/messages/scene_create_object_by_crc.h>
 #include <swganh/scene/messages/scene_end_baselines.h>
 #include <swganh/connection/connection_client.h>
 #include "swganh/component/connection_component.h"
+
+#include <swganh/transform/transform_component_interface.h>
 
 using namespace baseline;
 using namespace swganh::baseline;
@@ -33,13 +36,69 @@ void BaselineService::detach_baseline_delta(anh::HashString name)
 {
 	lookup_.erase(name);
 }
-void BaselineService::send_baselines_self(std::shared_ptr<anh::component::Entity> e) 
+
+void BaselineService::send_baselines(std::shared_ptr<anh::component::Entity> e, std::shared_ptr<anh::component::Entity> receiving_entity)
 {
-    std::list<std::shared_ptr<anh::component::Entity>> self;
-    self.push_back(e);
-    send_baselines(e, self);
+	if(e == nullptr || receiving_entity == nullptr)
+		return;
+
+    //Generate Relevant Baselines
+	std::vector<std::pair<bool, anh::ByteBuffer>> generated_baselines;
+
+	std::set<anh::HashString> tags = e->Tags();
+	auto end = tags.end();
+	for(auto itr = tags.begin(); itr != end; ++itr)
+	{
+		auto search = groups_.find(*itr);
+		if(search != groups_.end())
+		{
+			search->second(e, generated_baselines);
+			break;
+		}
+	}
+
+	if(generated_baselines.size() > 0)
+	{
+		//Send Baselines to recieving entities
+		std::vector<std::pair<bool, anh::ByteBuffer>>::iterator base_itr;
+		std::vector<std::pair<bool, anh::ByteBuffer>>::iterator base_end = generated_baselines.end();
+
+		auto session = receiving_entity->QueryInterface<swganh::component::ConnectionComponentInterface>("connection")->session();
+		if(session != nullptr)
+		{
+			swganh::scene::messages::SceneCreateObjectByCrc scene_object;
+			auto transform = e->QueryInterface<swganh::transform::TransformComponentInterface>("Transform");
+			scene_object.object_id = e->id();
+			scene_object.orientation = transform->rotation();
+			scene_object.position = transform->position();
+			scene_object.object_crc = e->name();
+			scene_object.byte_flag = 0;
+			session->SendMessage(scene_object);
+
+			for(base_itr = generated_baselines.begin(); base_itr != base_end; ++base_itr) 
+			{
+				if(!base_itr->first || (base_itr->first && receiving_entity == e)) 
+				{
+					session->SendMessage((*base_itr).second);
+				}
+			}
+			// send end baselines to all receiving entities
+			swganh::scene::messages::SceneEndBaselines seb;
+			seb.object_id = receiving_entity->id();
+			session->SendMessage(seb);
+		}
+		else
+		{
+			DLOG(WARNING) << "Entity "<< receiving_entity->id() <<" with a bad Session.";
+		}
+	}
+	else
+	{
+		DLOG(WARNING) << "Could not send Baselines for " << e->id() << " because it is missing the proper tag." << std::endl;
+	}
 }
-void BaselineService::send_baselines(std::shared_ptr<Entity> e, std::list<std::shared_ptr<anh::component::Entity>> recieving_entities)
+
+void BaselineService::send_baselines(std::shared_ptr<Entity> e, std::list<std::shared_ptr<anh::component::Entity>> recieving_entities, bool duplex)
 {
 	if(e == nullptr)
 		return;
@@ -66,28 +125,45 @@ void BaselineService::send_baselines(std::shared_ptr<Entity> e, std::list<std::s
 
 		std::list<std::shared_ptr<anh::component::Entity>>::iterator recv_itr;
 		std::list<std::shared_ptr<anh::component::Entity>>::iterator recv_end = recieving_entities.end();
-		for(recv_itr = recieving_entities.begin(); recv_itr != recv_end; ++recv_itr) {
-			for(base_itr = generated_baselines.begin(); base_itr != base_end; ++base_itr) {
-				if(!base_itr->first || (base_itr->first && *recv_itr == e))
+		for(recv_itr = recieving_entities.begin(); recv_itr != recv_end; ++recv_itr) 
+		{
+			auto session = (*recv_itr)->QueryInterface<swganh::component::ConnectionComponentInterface>("connection")->session();
+			if( session != nullptr)
+			{
+				swganh::scene::messages::SceneCreateObjectByCrc scene_object;
+				auto transform = e->QueryInterface<swganh::transform::TransformComponentInterface>("Transform");
+				scene_object.object_id = e->id();
+				scene_object.orientation = transform->rotation();
+				scene_object.position = transform->position();
+				scene_object.object_crc = e->name();
+				scene_object.byte_flag = 0;
+				session->SendMessage(scene_object);
+
+				for(base_itr = generated_baselines.begin(); base_itr != base_end; ++base_itr) 
 				{
-                    auto connection = (*recv_itr)->QueryInterface<swganh::component::ConnectionComponentInterface>("connection");
-                    if (connection->session() != nullptr) {
-                        connection->session()->SendMessage((*base_itr).second);
-                    }
-                    else
-                        DLOG(WARNING) << "Entity " << (*recv_itr)->id() << " has an invalid session";
+					if(!base_itr->first || (base_itr->first && *recv_itr == e))
+					{
+						session->SendMessage((*base_itr).second);
+					}
 				}
+				swganh::scene::messages::SceneEndBaselines seb;
+				seb.object_id = (*recv_itr)->id();
+				session->SendMessage(seb);
 			}
-            // send end baselines to all receiving entities
-            auto connection = (*recv_itr)->QueryInterface<swganh::component::ConnectionComponentInterface>("connection");
-            swganh::scene::messages::SceneEndBaselines seb;
-            seb.object_id = (*recv_itr)->id();
-            connection->session()->SendMessage(seb);
+			else
+			{
+				DLOG(WARNING) << "Entity "<< (*recv_itr)->id() <<" with a bad Session.";
+			}
+			
+			if(duplex)
+			{
+				send_baselines(*recv_itr, e);
+			}
 		}
 	}
 	else
 	{
-		LOG(WARNING) << "Could not send Baselines for " << e->id() << " because it is missing the proper tag." << std::endl;
+		DLOG(WARNING) << "Could not send Baselines for " << e->id() << " because it is missing the proper tag." << std::endl;
 	}
 }
 
@@ -183,17 +259,13 @@ void BaselineService::DescribeConfigOptions(boost::program_options::options_desc
 void BaselineService::subscribe()
 {
 	kernel()->GetEventDispatcher()->subscribe(anh::HashString("BaselineEvent"), [this] (std::shared_ptr<anh::event_dispatcher::EventInterface> e) -> bool {
-		auto actual_event = std::dynamic_pointer_cast<swganh::baseline::BaselineEvent, anh::event_dispatcher::EventInterface>(e);
-		if(actual_event->entity != nullptr)
-		{
-			//send_baselines(actual_event->entity, actual_event->receiving_entities);
-			return true;
-		}
-		return false;
+		auto actual_event = std::static_pointer_cast<anh::event_dispatcher::BasicEvent<swganh::baseline::BaselineEvent>>(e);
+		send_baselines(actual_event->entity_, actual_event->receiving_entities_, actual_event->duplex_);
+		return true;
 	});
-
+	l
 	kernel()->GetEventDispatcher()->subscribe(anh::HashString("DeltaEvent"), [this] (std::shared_ptr<anh::event_dispatcher::EventInterface> e) -> bool {
-		auto actual_event = std::dynamic_pointer_cast<swganh::baseline::DeltaEvent, anh::event_dispatcher::EventInterface>(e);
+		auto actual_event = std::static_pointer_cast<anh::event_dispatcher::BasicEvent<swganh::baseline::DeltaEvent>>(e);
 		if(actual_event->entity != nullptr)
 		{
 			send_deltas(actual_event->entity);

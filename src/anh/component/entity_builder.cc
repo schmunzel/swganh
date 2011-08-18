@@ -26,7 +26,6 @@
 
 namespace swganh { namespace containers {
 	std::shared_ptr<NullContainerComponent> ContainerComponentInterface::NullComponent = std::make_shared<NullContainerComponent>();
-	std::shared_ptr<NullContainerPermission> NullContainerComponent::null_permissions = std::make_shared<NullContainerPermission>();
 }
 }
 
@@ -140,9 +139,6 @@ EntityBuildErrors EntityBuilder::BuildEntity(std::shared_ptr<Entity> parent, std
     {
         status = BUILD_FAILED;
     }
-
-	if(parent != nullptr)
-		parent->QueryInterface<swganh::containers::ContainerComponentInterface>("Container")->insert(nullptr, entity, true);
 
     return status;
 }

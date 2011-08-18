@@ -59,6 +59,9 @@
 #include "swganh/connection/messages/heart_beat.h"
 
 #include "swganh/containers/universe_container_component.h"
+#include "swganh/containers/slotted_container_component.h"
+#include "swganh/containers/sorted_container_component.h"
+
 #include "swganh/transform/transform_component.h"
 #include "swganh/component/connection_component.h"
 
@@ -142,14 +145,29 @@ void SceneService::DescribeConfigOptions(boost::program_options::options_descrip
 
 void SceneService::RegisterComponentCreators()
 {
-	entity_builder_->RegisterCreator("universe_container", [] (const EntityId&) -> std::shared_ptr<swganh::containers::universe_container_component> {
-		return std::make_shared<swganh::containers::universe_container_component>(16384, 128, 128, false);
+	//CONTAINERS
+	entity_builder_->RegisterCreator("universe_container", [] (const EntityId&) {
+		return std::make_shared<swganh::containers::universe_container_component>();
 	});
 
-	entity_builder_->RegisterCreator("transform", [] (const EntityId&) -> std::shared_ptr<swganh::transform::TransformComponent> {
+	entity_builder_->RegisterCreator("sorted_container", [] (const EntityId&) {
+		return std::make_shared<swganh::containers::sorted_container_component>();
+	});
+
+	entity_builder_->RegisterCreator("slotted_container", [] (const EntityId&) {
+		return std::make_shared<swganh::containers::slotted_container_component>();
+	});
+
+	//CONTAINER PERMISSIONS
+
+
+
+	//MISC
+	entity_builder_->RegisterCreator("transform", [] (const EntityId&) {
 		return std::make_shared<swganh::transform::TransformComponent>();
 	});
-    entity_builder_->RegisterCreator("connection", [] (const EntityId&) -> std::shared_ptr<swganh::component::ConnectionComponent> {
+
+    entity_builder_->RegisterCreator("connection", [] (const EntityId&) {
         return std::make_shared<swganh::component::ConnectionComponent>();
     });
 }
@@ -206,7 +224,7 @@ bool SceneService::RemoveEntityClient_(uint64_t entity_id)
 }
 bool SceneService::CreateScene() 
 {
-	entity_builder_->BuildEntity(nullptr, 0, "universe", "", [] () -> std::uint64_t { return 0; });
+	entity_builder_->BuildEntity(nullptr, 0, scene_name(), "", [] () -> std::uint64_t { return 0; });
 
     return true;
 }
@@ -217,12 +235,19 @@ bool SceneService::AddPlayerToScene(swganh::character::CharacterLoginData charac
 	std::uint64_t i = character.character_id;
     auto entity_errors = entity_builder()->BuildEntity(0, "player", "anh.Player", [&] () -> std::uint64_t {return i++;});
     auto entity = entity_manager()->GetEntity(character.character_id);
+	
+	entity->parent_intrl_(entity_manager()->GetEntity(0));
+
     auto connection = entity->QueryInterface<swganh::component::ConnectionComponentInterface>("connection");
     // setup the connection component
     connection->account_id(character.client->account_id);
     connection->player_id(character.client->player_id);
     connection->session(character.client->session);
     
+	//I cheated a bit here ;)
+	entity->QueryInterface<swganh::transform::TransformComponentInterface>("Transform")->pos_(character.position);
+	entity->QueryInterface<swganh::transform::TransformComponentInterface>("Transform")->rot_(character.orientation);
+
     CmdStartScene start_scene;
     // @TODO: Replace with configurable value
     start_scene.ignore_layout = 0;
@@ -230,10 +255,10 @@ bool SceneService::AddPlayerToScene(swganh::character::CharacterLoginData charac
     start_scene.terrain_map = character.terrain_map;
     start_scene.position = character.position;
     start_scene.shared_race_template = "object/creature/player/shared_" + character.race + "_" + character.gender + ".iff";
-    start_scene.galaxy_time = service_directory()->galaxy().GetGalaxyTimeInMilliseconds();
-        
+    start_scene.galaxy_time = service_directory()->galaxy().GetGalaxyTimeInMilliseconds();    
     character.client->session->SendMessage(start_scene);
-    SceneCreateObjectByCrc scene_object;
+    
+	SceneCreateObjectByCrc scene_object;
     scene_object.object_id = entity->id();
     scene_object.orientation = character.orientation;
     scene_object.position = character.position;
@@ -242,8 +267,12 @@ bool SceneService::AddPlayerToScene(swganh::character::CharacterLoginData charac
     scene_object.byte_flag = 0;
     character.client->session->SendMessage(scene_object);
 
-    // Send Baselines
-    baseline_service()->send_baselines_self(entity);
+	// Send Baselines
+    baseline_service()->send_baselines(entity, entity);
+
+	//Insert into world
+	entity->parent()->QueryInterface<swganh::containers::ContainerComponentInterface>("Container")->insert(nullptr, entity, true);
+
     return true;
 }
 

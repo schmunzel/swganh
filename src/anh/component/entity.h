@@ -22,6 +22,7 @@
 
 #include <map>
 #include <set>
+#include <anh/hash_string.h>
 #include <anh/component/component_interface.h>
 
 #ifndef UPDATABLES
@@ -107,7 +108,7 @@ public:
 	void BroadcastMessage(Message message);
 
 	const EntityId& id() const { return id_; }
-	const std::string& name() const { return name_; }
+	const anh::HashString& name() const { return name_; }
 
 	void add_update(anh::HashString hs, std::uint16_t id);
 	void clear_updates();
@@ -120,7 +121,7 @@ private:
 	typedef std::map<InterfaceType, std::shared_ptr<ComponentInterface>>			ComponentsMap;
 	typedef std::map<InterfaceType, std::shared_ptr<ComponentInterface>>::iterator	ComponentsMapIterator;
 
-	std::string							name_;
+	anh::HashString						name_;
 	EntityId							id_;
 	TagSet								tags_;
 	ComponentsMap						components_;

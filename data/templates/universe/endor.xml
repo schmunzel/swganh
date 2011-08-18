@@ -1,0 +1,8 @@
+<entity type='endor' tags='static'>
+	<component type='universe_container'>
+		<map_size>16384</map_size>
+		<bucket_size>64</bucket_size>
+		<viewing_range>128</viewing_range>
+		<is_3D>false</is_3D>
+	</component>
+</entity>
