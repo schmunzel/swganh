@@ -56,7 +56,8 @@ public:
 	virtual void populate() = 0;
 
 	virtual bool intrl_insert_(std::shared_ptr<anh::component::Entity> what, std::shared_ptr<ContainerComponentInterface> old_container) = 0;
-	virtual void load_descriptor(const std::set<anh::HashString>& descriptor) {}
+	
+	virtual void add_descriptor(const std::list<anh::HashString>& descriptor) {}
 
 	static std::shared_ptr<NullContainerComponent> NullComponent;
 };

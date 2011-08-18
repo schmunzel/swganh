@@ -263,7 +263,7 @@ void BaselineService::subscribe()
 		send_baselines(actual_event->entity_, actual_event->receiving_entities_, actual_event->duplex_);
 		return true;
 	});
-	l
+	
 	kernel()->GetEventDispatcher()->subscribe(anh::HashString("DeltaEvent"), [this] (std::shared_ptr<anh::event_dispatcher::EventInterface> e) -> bool {
 		auto actual_event = std::static_pointer_cast<anh::event_dispatcher::BasicEvent<swganh::baseline::DeltaEvent>>(e);
 		if(actual_event->entity != nullptr)
