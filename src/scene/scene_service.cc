@@ -269,14 +269,7 @@ bool SceneService::AddPlayerToScene(swganh::character::CharacterLoginData charac
     start_scene.galaxy_time = service_directory()->galaxy().GetGalaxyTimeInMilliseconds();    
     character.client->session->SendMessage(start_scene);
     
-	SceneCreateObjectByCrc scene_object;
-    scene_object.object_id = entity->id();
-    scene_object.orientation = character.orientation;
-    scene_object.position = character.position;
-    scene_object.object_crc = anh::memcrc(character.race_template);
-    // @TODO: Replace with configurable value
-    scene_object.byte_flag = 0;
-    character.client->session->SendMessage(scene_object);
+    entity->name(start_scene.shared_race_template);
 
 	// Send Baselines
     baseline_service()->send_baselines(entity, entity);

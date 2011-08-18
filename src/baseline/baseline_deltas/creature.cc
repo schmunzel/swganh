@@ -32,86 +32,6 @@ namespace baseline { namespace baseline_deltas {
 		serv->attach_baseline_delta("CREO1", bd);
 	}
 
-	void init_creo4(baseline::BaselineService* serv)
-	{
-		auto bd = std::make_shared<baseline::BaselineDelta>("CREO", 0x4, true);
-
-		bd->attach_updatable(0, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
-			//Acceleration Multiplier Base
-			b.write<std::uint32_t>(0);
-		});
-
-		bd->attach_updatable(1, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
-			//Acceleration Multiplier Mod
-			b.write<std::uint32_t>(0);
-		});
-
-		bd->attach_updatable(2, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
-			//Encumberance HAM List
-			b.write<std::uint32_t>(0);
-			b.write<std::uint32_t>(0);
-		});
-
-		bd->attach_updatable(3, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
-			//Skill Mod List
-			b.write<std::uint32_t>(0);
-			b.write<std::uint32_t>(0);
-		});
-
-		bd->attach_updatable(4, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
-			//Speed Multipier Base
-			b.write<std::uint32_t>(0);
-		});
-
-		bd->attach_updatable(5, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
-			//Speed Multiplier Mod
-			b.write<std::uint32_t>(0);
-		});
-
-		bd->attach_updatable(6, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
-			//ListenToID
-			b.write<std::uint64_t>(0);
-		});
-
-		bd->attach_updatable(7, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
-			//RunSpeed
-			b.write<std::uint32_t>(0);
-		});
-
-		bd->attach_updatable(8, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
-			//Slope Mod Angle
-			b.write<std::uint32_t>(0);
-		});
-
-		bd->attach_updatable(9, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
-			//Slope Mod Percent
-			b.write<std::uint32_t>(0);
-		});
-
-		bd->attach_updatable(10, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
-			//Turn Radius
-			b.write<std::uint32_t>(0);
-		});
-
-		bd->attach_updatable(11, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
-			//Walk Speed
-			b.write<std::uint32_t>(0);
-		});
-
-		bd->attach_updatable(12, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
-			//WaterModPercent
-			b.write<std::uint32_t>(0);
-		});
-
-		bd->attach_updatable(13, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
-			//GroupMissionCriticalObjects
-			b.write<std::uint32_t>(0);
-			b.write<std::uint32_t>(0);
-		});
-
-		serv->attach_baseline_delta("CREO4", bd);
-	}
-
 	void init_creo3(baseline::BaselineService* serv)
 	{
 		auto bd = std::make_shared<baseline::BaselineDelta>("CREO", 0x3, false);
@@ -212,10 +132,89 @@ namespace baseline { namespace baseline_deltas {
 
 		serv->attach_baseline_delta("CREO3", bd);
 	}
+    void init_creo4(baseline::BaselineService* serv)
+	{
+		auto bd = std::make_shared<baseline::BaselineDelta>("CREO", 0x4, true);
+
+		bd->attach_updatable(0, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
+			//Acceleration Multiplier Base
+			b.write<std::uint32_t>(0);
+		});
+
+		bd->attach_updatable(1, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
+			//Acceleration Multiplier Mod
+			b.write<std::uint32_t>(0);
+		});
+
+		bd->attach_updatable(2, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
+			//Encumberance HAM List
+			b.write<std::uint32_t>(0);
+			b.write<std::uint32_t>(0);
+		});
+
+		bd->attach_updatable(3, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
+			//Skill Mod List
+			b.write<std::uint32_t>(0);
+			b.write<std::uint32_t>(0);
+		});
+
+		bd->attach_updatable(4, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
+			//Speed Multipier Base
+			b.write<std::uint32_t>(0);
+		});
+
+		bd->attach_updatable(5, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
+			//Speed Multiplier Mod
+			b.write<std::uint32_t>(0);
+		});
+
+		bd->attach_updatable(6, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
+			//ListenToID
+			b.write<std::uint64_t>(0);
+		});
+
+		bd->attach_updatable(7, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
+			//RunSpeed
+			b.write<std::uint32_t>(0);
+		});
+
+		bd->attach_updatable(8, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
+			//Slope Mod Angle
+			b.write<std::uint32_t>(0);
+		});
+
+		bd->attach_updatable(9, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
+			//Slope Mod Percent
+			b.write<std::uint32_t>(0);
+		});
+
+		bd->attach_updatable(10, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
+			//Turn Radius
+			b.write<std::uint32_t>(0);
+		});
+
+		bd->attach_updatable(11, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
+			//Walk Speed
+			b.write<std::uint32_t>(0);
+		});
+
+		bd->attach_updatable(12, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
+			//WaterModPercent
+			b.write<std::uint32_t>(0);
+		});
+
+		bd->attach_updatable(13, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
+			//GroupMissionCriticalObjects
+			b.write<std::uint32_t>(0);
+			b.write<std::uint32_t>(0);
+		});
+
+		serv->attach_baseline_delta("CREO4", bd);
+	}
 
 	void init_creo6(baseline::BaselineService* serv)
 	{
-		auto bd = std::make_shared<baseline::BaselineDelta>("CREO", 0x6, true);
+		auto bd = std::make_shared<baseline::BaselineDelta>("CREO", 0x6, false);
 
 		bd->attach_updatable(0, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
 			//??
@@ -316,7 +315,6 @@ namespace baseline { namespace baseline_deltas {
 
 		serv->attach_baseline_delta("CREO6", bd);
 	}
-
 	void init_creature(baseline::BaselineService* serv)
 	{
 		init_creo1(serv);

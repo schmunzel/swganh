@@ -109,6 +109,7 @@ public:
 
 	const EntityId& id() const { return id_; }
 	const anh::HashString& name() const { return name_; }
+    void name(const anh::HashString& name) { name_ = name; }
 
 	void add_update(anh::HashString hs, std::uint16_t id);
 	void clear_updates();

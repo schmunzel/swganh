@@ -84,7 +84,7 @@ void BaselineService::send_baselines(std::shared_ptr<anh::component::Entity> e, 
 			}
 			// send end baselines to all receiving entities
 			swganh::scene::messages::SceneEndBaselines seb;
-			seb.object_id = receiving_entity->id();
+			seb.object_id = e->id();
 			session->SendMessage(seb);
 		}
 		else
@@ -147,7 +147,7 @@ void BaselineService::send_baselines(std::shared_ptr<Entity> e, std::list<std::s
 					}
 				}
 				swganh::scene::messages::SceneEndBaselines seb;
-				seb.object_id = (*recv_itr)->id();
+				seb.object_id = e->id();
 				session->SendMessage(seb);
 			}
 			else
@@ -263,7 +263,7 @@ void BaselineService::subscribe()
 		send_baselines(actual_event->entity_, actual_event->receiving_entities_, actual_event->duplex_);
 		return true;
 	});
-	l
+
 	kernel()->GetEventDispatcher()->subscribe(anh::HashString("DeltaEvent"), [this] (std::shared_ptr<anh::event_dispatcher::EventInterface> e) -> bool {
 		auto actual_event = std::static_pointer_cast<anh::event_dispatcher::BasicEvent<swganh::baseline::DeltaEvent>>(e);
 		if(actual_event->entity != nullptr)
