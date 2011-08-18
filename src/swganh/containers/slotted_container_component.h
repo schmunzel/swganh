@@ -40,7 +40,7 @@ public:
 	//Permission Methods
 	virtual bool intrl_insert_(std::shared_ptr<anh::component::Entity> what, std::shared_ptr<ContainerComponentInterface> old_container);
 
-	virtual void load_descriptor_(const std::set<anh::HashString>& descriptor)
+	virtual void add_descriptor(const std::list<anh::HashString>& descriptor)
 	{
 		size_t i = 0;
 		std::for_each(descriptor.begin(), descriptor.end(), [&, this] (const anh::HashString& h) {
