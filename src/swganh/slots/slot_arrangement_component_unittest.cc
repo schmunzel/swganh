@@ -11,7 +11,7 @@ namespace
 TEST(SlotArrangementTests, NullSlotArrangementIsEmpty)
 {
 	std::shared_ptr<Entity> e = std::make_shared<Entity>();
-	std::shared_ptr<SlotArrangementComponent> arr = e->QueryInterface<SlotArrangementComponent>("SlotArrangement");
+	std::shared_ptr<SlotArrangementInterface> arr = e->QueryInterface<SlotArrangementInterface>("SlotArrangement");
 
 	EXPECT_EQ(SlotArrangementComponent::NullComponent, arr) << "We do not get the NullComponent as we should.";
 	EXPECT_EQ(0, arr->arrangements()) << "NullComponent does not start out empty.";
@@ -22,7 +22,7 @@ TEST(SlotArrangementTests, AddArrangement)
 	std::shared_ptr<Entity> e = std::make_shared<Entity>();
 
 	e->AttachComponent(std::make_shared<SlotArrangementComponent>());
-	std::shared_ptr<SlotArrangementComponent> arr = e->QueryInterface<SlotArrangementComponent>("SlotArrangement");
+	std::shared_ptr<SlotArrangementInterface> arr = e->QueryInterface<SlotArrangementInterface>("SlotArrangement");
 
 	std::set<anh::HashString> names;
 	names.insert(anh::HashString("Powerking"));
@@ -39,7 +39,7 @@ TEST(SlotArrangementTests, RemoveArrangement)
 	std::shared_ptr<Entity> e = std::make_shared<Entity>();
 
 	e->AttachComponent(std::make_shared<SlotArrangementComponent>());
-	std::shared_ptr<SlotArrangementComponent> arr = e->QueryInterface<SlotArrangementComponent>("SlotArrangement");
+	std::shared_ptr<SlotArrangementInterface> arr = e->QueryInterface<SlotArrangementInterface>("SlotArrangement");
 
 	std::set<anh::HashString> names;
 	names.insert(anh::HashString("Powerking"));
@@ -60,7 +60,7 @@ TEST(SlotArrangementTests, GetAnArrangementById)
 	std::shared_ptr<Entity> e = std::make_shared<Entity>();
 
 	e->AttachComponent(std::make_shared<SlotArrangementComponent>());
-	std::shared_ptr<SlotArrangementComponent> arr = e->QueryInterface<SlotArrangementComponent>("SlotArrangement");
+	std::shared_ptr<SlotArrangementInterface> arr = e->QueryInterface<SlotArrangementInterface>("SlotArrangement");
 
 	std::set<anh::HashString> names;
 	names.insert(anh::HashString("Powerking"));

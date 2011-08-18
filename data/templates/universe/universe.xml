@@ -1,4 +1,0 @@
-<entity type='universe' tags='static'>
-	<component type='universe_container'>
-	</component>
-</entity>

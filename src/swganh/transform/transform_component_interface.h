@@ -70,6 +70,9 @@ class TransformComponentInterface : public anh::component::BaseComponent {
 	virtual void remove_region(std::shared_ptr<swganh::regions::RegionInterface> region) = 0;
 	virtual std::set<std::shared_ptr<swganh::regions::RegionInterface>> regions() = 0;
 
+	virtual void pos_(const glm::vec3& pos) = 0;
+	virtual void rot_(const glm::quat& rot) = 0;
+
     static std::shared_ptr<NullTransformComponent> NullComponent;
 };
 class NullTransformComponent : public TransformComponentInterface {
@@ -94,6 +97,10 @@ public:
 	void insert_region(std::shared_ptr<swganh::regions::RegionInterface> region) {}
 	void remove_region(std::shared_ptr<swganh::regions::RegionInterface> region) {}
 	std::set<std::shared_ptr<swganh::regions::RegionInterface>> regions() {return std::set<std::shared_ptr<swganh::regions::RegionInterface>>();}
+
+	virtual void pos_(const glm::vec3& pos) {}
+	virtual void rot_(const glm::quat& rot)  {}
+
 private:
     glm::vec3 position_;
     glm::quat rotation_;

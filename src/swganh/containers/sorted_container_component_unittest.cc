@@ -18,7 +18,7 @@ TEST(SortedContainerTests, InsertEntityDependsOnPermissions)
 {
 	//Create the Permissions MockObject and Container
 	std::shared_ptr<::MockPermissions> permission_mock = std::make_shared<::MockPermissions>();
-	std::shared_ptr<sorted_container_component> sorted = std::make_shared<sorted_container_component>(permission_mock);
+	std::shared_ptr<sorted_container_component> sorted = std::make_shared<sorted_container_component>();
 
 	//Setup Expectations
 	EXPECT_CALL(*permission_mock, can_insert(_, _))
@@ -39,7 +39,7 @@ TEST(SortedContainerTests, CannotInsertEntityViaSlotList)
 {
 	//Create the Permissions MockObject and Container
 	std::shared_ptr<::MockPermissions> permission_mock = std::make_shared<::MockPermissions>();
-	std::shared_ptr<sorted_container_component> sorted = std::make_shared<sorted_container_component>(permission_mock);
+	std::shared_ptr<sorted_container_component> sorted = std::make_shared<sorted_container_component>();
 
 	//Do the calls
 	EXPECT_EQ(false, sorted->insert(std::make_shared<Entity>(), std::make_shared<Entity>(), 0, false));
@@ -50,7 +50,7 @@ TEST(SortedContainerTests, RemoveEntityDependsOnPermissions)
 {
 	//Create the Permissions MockObject and Container
 	std::shared_ptr<::MockPermissions> permission_mock = std::make_shared<::MockPermissions>();
-	std::shared_ptr<sorted_container_component> sorted = std::make_shared<sorted_container_component>(permission_mock);
+	std::shared_ptr<sorted_container_component> sorted = std::make_shared<sorted_container_component>();
 
 	std::shared_ptr<Entity> a = std::make_shared<Entity>();
 	std::shared_ptr<Entity> b = std::make_shared<Entity>();
@@ -80,7 +80,7 @@ TEST(SortedContainerTests, TransferToTestsPermissionsOK)
 {
 	//Create the Permissions MockObject and Container
 	std::shared_ptr<::MockPermissions> permission_mock = std::make_shared<::MockPermissions>();
-	std::shared_ptr<ContainerComponentInterface> sorted = std::make_shared<sorted_container_component>(permission_mock);
+	std::shared_ptr<ContainerComponentInterface> sorted = std::make_shared<sorted_container_component>();
 
 	std::shared_ptr<MockContainerComponent> mock_container = std::make_shared<MockContainerComponent>();
 	
@@ -120,7 +120,7 @@ TEST(SortedContainerTests, TransferToPermissionsBadRemove)
 {
 	//Create the Permissions MockObject and Container
 	std::shared_ptr<::MockPermissions> permission_mock = std::make_shared<::MockPermissions>();
-	std::shared_ptr<ContainerComponentInterface> sorted = std::make_shared<sorted_container_component>(permission_mock);
+	std::shared_ptr<ContainerComponentInterface> sorted = std::make_shared<sorted_container_component>();
 
 	std::shared_ptr<MockContainerComponent> mock_container = std::make_shared<MockContainerComponent>();
 	
@@ -145,7 +145,7 @@ TEST(SortedContainerTests, TransferToPermissionsBadInsert)
 {
 	//Create the Permissions MockObject and Container
 	std::shared_ptr<::MockPermissions> permission_mock = std::make_shared<::MockPermissions>();
-	std::shared_ptr<ContainerComponentInterface> sorted = std::make_shared<sorted_container_component>(permission_mock);
+	std::shared_ptr<ContainerComponentInterface> sorted = std::make_shared<sorted_container_component>();
 
 	std::shared_ptr<MockContainerComponent> mock_container = std::make_shared<MockContainerComponent>();
 	
@@ -173,7 +173,7 @@ TEST(SortedContainerTests, TransferToPermissionsBadInsert)
 TEST(SortedContainerTests, MakeAwareProveRecursive)
 {
 	std::shared_ptr<::MockPermissions> permission_mock = std::make_shared<::MockPermissions>();
-	std::shared_ptr<ContainerComponentInterface> sorted = std::make_shared<sorted_container_component>(permission_mock);
+	std::shared_ptr<ContainerComponentInterface> sorted = std::make_shared<sorted_container_component>();
 
 	std::shared_ptr<MockContainerComponent> mock_container = std::make_shared<MockContainerComponent>();
 	std::shared_ptr<Entity> the_ent = std::make_shared<Entity>();
@@ -197,7 +197,7 @@ TEST(SortedContainerTests, MakeAwareProveRecursive)
 TEST(SortedContainerTests, MakeAwareNonRecurseWhenFalsePermissions)
 {
 	std::shared_ptr<::MockPermissions> permission_mock = std::make_shared<::MockPermissions>();
-	std::shared_ptr<ContainerComponentInterface> sorted = std::make_shared<sorted_container_component>(permission_mock);
+	std::shared_ptr<ContainerComponentInterface> sorted = std::make_shared<sorted_container_component>();
 
 	std::shared_ptr<MockContainerComponent> mock_container = std::make_shared<MockContainerComponent>();
 	std::shared_ptr<Entity> the_ent = std::make_shared<Entity>();
@@ -221,7 +221,7 @@ TEST(SortedContainerTests, MakeAwareNonRecurseWhenFalsePermissions)
 TEST(SortedContainerTests, MakeUnawareProveRecursive)
 {
 	std::shared_ptr<::MockPermissions> permission_mock = std::make_shared<::MockPermissions>();
-	std::shared_ptr<ContainerComponentInterface> sorted = std::make_shared<sorted_container_component>(permission_mock);
+	std::shared_ptr<ContainerComponentInterface> sorted = std::make_shared<sorted_container_component>();
 
 	std::shared_ptr<MockContainerComponent> mock_container = std::make_shared<MockContainerComponent>();
 	std::shared_ptr<Entity> the_ent = std::make_shared<Entity>();
@@ -245,7 +245,7 @@ TEST(SortedContainerTests, MakeUnawareProveRecursive)
 TEST(SortedContainerTests, MakeUnawareNonRecurseWhenFalsePermissions)
 {
 	std::shared_ptr<::MockPermissions> permission_mock = std::make_shared<::MockPermissions>();
-	std::shared_ptr<ContainerComponentInterface> sorted = std::make_shared<sorted_container_component>(permission_mock);
+	std::shared_ptr<ContainerComponentInterface> sorted = std::make_shared<sorted_container_component>();
 
 	std::shared_ptr<MockContainerComponent> mock_container = std::make_shared<MockContainerComponent>();
 	std::shared_ptr<Entity> the_ent = std::make_shared<Entity>();
@@ -269,7 +269,7 @@ TEST(SortedContainerTests, MakeUnawareNonRecurseWhenFalsePermissions)
 TEST(SortedContainerTests, AwareEntitiesWorks)
 {
 	std::shared_ptr<::MockPermissions> permission_mock = std::make_shared<::MockPermissions>();
-	std::shared_ptr<ContainerComponentInterface> sorted = std::make_shared<sorted_container_component>(permission_mock);
+	std::shared_ptr<ContainerComponentInterface> sorted = std::make_shared<sorted_container_component>();
 
 	std::shared_ptr<MockContainerComponent> mock_container = std::make_shared<MockContainerComponent>();
 	std::shared_ptr<Entity> the_ent = std::make_shared<Entity>();
@@ -289,349 +289,11 @@ TEST(SortedContainerTests, AwareEntitiesWorks)
 	EXPECT_EQ(the_ent, *entities.begin());
 }
 
-TEST(SortedContainerTests, CanViewCallsSubObject)
-{
-	//Create the Permissions MockObject and Container
-	std::shared_ptr<::MockPermissions> permission_mock = std::make_shared<::MockPermissions>();
-	std::shared_ptr<sorted_container_component> sorted = std::make_shared<sorted_container_component>(permission_mock);
-	std::shared_ptr<Entity> a = std::make_shared<Entity>();
-	std::shared_ptr<Entity> b = std::make_shared<Entity>();
-
-	//Setup Expectations
-	EXPECT_CALL(*permission_mock, can_view(_))
-		.Times(2)
-		.WillOnce(Return(true))
-		.WillOnce(Return(false));
-
-	//Do the calls
-	EXPECT_EQ(true, sorted->permissions_can_view(a));
-	EXPECT_EQ(false, sorted->permissions_can_view(b));
-}
-
-TEST(SortedContainerTests, CanInsertCallsSubObject)
-{
-	//Create the Permissions MockObject and Container
-	std::shared_ptr<::MockPermissions> permission_mock = std::make_shared<::MockPermissions>();
-	std::shared_ptr<sorted_container_component> sorted = std::make_shared<sorted_container_component>(permission_mock);
-	std::shared_ptr<Entity> a = std::make_shared<Entity>();
-	std::shared_ptr<Entity> b = std::make_shared<Entity>();
-
-	//Setup Expectations
-	EXPECT_CALL(*permission_mock, can_insert(_, _))
-		.Times(2)
-		.WillOnce(Return(true))
-		.WillOnce(Return(false));
-
-	//Do the calls
-	EXPECT_EQ(true, sorted->permissions_can_insert(a, b));
-	EXPECT_EQ(false, sorted->permissions_can_insert(b, a));
-}
-
-TEST(SortedContainerTests, CanInsertWithArrangementDoesntCallSubObject)
-{
-	//Create the Permissions MockObject and Container
-	std::shared_ptr<::MockPermissions> permission_mock = std::make_shared<::MockPermissions>();
-	std::shared_ptr<sorted_container_component> sorted = std::make_shared<sorted_container_component>(permission_mock);
-	std::shared_ptr<Entity> a = std::make_shared<Entity>();
-	std::shared_ptr<Entity> b = std::make_shared<Entity>();
-	std::set<anh::HashString> setA;
-
-	//Setup Expectations
-	EXPECT_CALL(*permission_mock, can_insert(_, _, _))
-		.Times(0);
-
-	//Do the calls
-	EXPECT_EQ(false, sorted->permissions_can_insert(b, a, setA));
-}
-
-TEST(SortedContainerTests, CanRemoveCallsSubObject)
-{
-	//Create the Permissions MockObject and Container
-	std::shared_ptr<::MockPermissions> permission_mock = std::make_shared<::MockPermissions>();
-	std::shared_ptr<sorted_container_component> sorted = std::make_shared<sorted_container_component>(permission_mock);
-	std::shared_ptr<Entity> a = std::make_shared<Entity>();
-	std::shared_ptr<Entity> b = std::make_shared<Entity>();
-
-	//Setup Expectations
-	EXPECT_CALL(*permission_mock, can_remove(_, _))
-		.Times(2)
-		.WillOnce(Return(true))
-		.WillOnce(Return(false));
-
-	//Do the calls
-	EXPECT_EQ(true, sorted->permissions_can_remove(a, b));
-	EXPECT_EQ(false, sorted->permissions_can_remove(b, a));
-}
-
-TEST(SortedContainerTests, CanGrantViewCallsSubObject)
-{
-	//Create the Permissions MockObject and Container
-	std::shared_ptr<::MockPermissions> permission_mock = std::make_shared<::MockPermissions>();
-	std::shared_ptr<sorted_container_component> sorted = std::make_shared<sorted_container_component>(permission_mock);
-	std::shared_ptr<Entity> a = std::make_shared<Entity>();
-	std::shared_ptr<Entity> b = std::make_shared<Entity>();
-
-	//Setup Expectations
-	EXPECT_CALL(*permission_mock, accepts_changes())
-		.Times(2)
-		.WillOnce(Return(false))
-		.WillOnce(Return(true));
-
-	EXPECT_CALL(*permission_mock, permissions_grant_view(A<std::shared_ptr<Entity>>(), _))
-		.Times(1)
-		.WillOnce(Return(std::set<std::shared_ptr<Entity>>()));
-
-	//Do the calls
-	EXPECT_EQ(false, sorted->permissions_grant_view(a));
-	EXPECT_EQ(true, sorted->permissions_grant_view(b));
-}
-
-TEST(SortedContainerTests, CanRevokeViewCallsSubObject)
-{
-//Create the Permissions MockObject and Container
-	std::shared_ptr<::MockPermissions> permission_mock = std::make_shared<::MockPermissions>();
-	std::shared_ptr<sorted_container_component> sorted = std::make_shared<sorted_container_component>(permission_mock);
-	std::shared_ptr<Entity> a = std::make_shared<Entity>();
-	std::shared_ptr<Entity> b = std::make_shared<Entity>();
-
-	//Setup Expectations
-	EXPECT_CALL(*permission_mock, accepts_changes())
-		.Times(2)
-		.WillOnce(Return(false))
-		.WillOnce(Return(true));
-
-	EXPECT_CALL(*permission_mock, permissions_revoke_view(A<std::shared_ptr<Entity>>(), _))
-		.Times(1)
-		.WillOnce(Return(std::set<std::shared_ptr<Entity>>()));
-
-	//Do the calls
-	EXPECT_EQ(false, sorted->permissions_revoke_view(a));
-	EXPECT_EQ(true, sorted->permissions_revoke_view(b));
-}
-
-TEST(SortedContainerTests, CanGrantInsertCallsSubObject)
-{
-	//Create the Permissions MockObject and Container
-	std::shared_ptr<::MockPermissions> permission_mock = std::make_shared<::MockPermissions>();
-	std::shared_ptr<sorted_container_component> sorted = std::make_shared<sorted_container_component>(permission_mock);
-	std::shared_ptr<Entity> a = std::make_shared<Entity>();
-	std::shared_ptr<Entity> b = std::make_shared<Entity>();
-
-	//Setup Expectations
-	EXPECT_CALL(*permission_mock, accepts_changes())
-		.Times(2)
-		.WillOnce(Return(false))
-		.WillOnce(Return(true));
-
-	EXPECT_CALL(*permission_mock, permissions_grant_insert(A<std::shared_ptr<Entity>>(), _))
-		.Times(1)
-		.WillOnce(Return(std::set<std::shared_ptr<Entity>>()));
-
-	//Do the calls
-	EXPECT_EQ(false, sorted->permissions_grant_insert(a));
-	EXPECT_EQ(true, sorted->permissions_grant_insert(b));
-}
-
-TEST(SortedContainerTests, CanRevokeInsertCallsSubObject)
-{
-	//Create the Permissions MockObject and Container
-	std::shared_ptr<::MockPermissions> permission_mock = std::make_shared<::MockPermissions>();
-	std::shared_ptr<sorted_container_component> sorted = std::make_shared<sorted_container_component>(permission_mock);
-	std::shared_ptr<Entity> a = std::make_shared<Entity>();
-	std::shared_ptr<Entity> b = std::make_shared<Entity>();
-
-	//Setup Expectations
-	EXPECT_CALL(*permission_mock, accepts_changes())
-		.Times(2)
-		.WillOnce(Return(false))
-		.WillOnce(Return(true));
-
-	EXPECT_CALL(*permission_mock, permissions_revoke_insert(A<std::shared_ptr<Entity>>(), _))
-		.Times(1)
-		.WillOnce(Return(std::set<std::shared_ptr<Entity>>()));
-
-	//Do the calls
-	EXPECT_EQ(false, sorted->permissions_revoke_insert(a));
-	EXPECT_EQ(true, sorted->permissions_revoke_insert(b));
-}
-
-TEST(SortedContainerTests, CanGrantRemoveCallsSubObject)
-{
-//Create the Permissions MockObject and Container
-	std::shared_ptr<::MockPermissions> permission_mock = std::make_shared<::MockPermissions>();
-	std::shared_ptr<sorted_container_component> sorted = std::make_shared<sorted_container_component>(permission_mock);
-	std::shared_ptr<Entity> a = std::make_shared<Entity>();
-	std::shared_ptr<Entity> b = std::make_shared<Entity>();
-
-	//Setup Expectations
-	EXPECT_CALL(*permission_mock, accepts_changes())
-		.Times(2)
-		.WillOnce(Return(false))
-		.WillOnce(Return(true));
-
-	EXPECT_CALL(*permission_mock, permissions_grant_removal(A<std::shared_ptr<Entity>>(), _))
-		.Times(1)
-		.WillOnce(Return(std::set<std::shared_ptr<Entity>>()));
-
-	//Do the calls
-	EXPECT_EQ(false, sorted->permissions_grant_removal(a));
-	EXPECT_EQ(true, sorted->permissions_grant_removal(b));
-}
-
-TEST(SortedContainerTests, CanRevokeRemoveCallsSubObject)
-{
-	//Create the Permissions MockObject and Container
-	std::shared_ptr<::MockPermissions> permission_mock = std::make_shared<::MockPermissions>();
-	std::shared_ptr<sorted_container_component> sorted = std::make_shared<sorted_container_component>(permission_mock);
-	std::shared_ptr<Entity> a = std::make_shared<Entity>();
-	std::shared_ptr<Entity> b = std::make_shared<Entity>();
-
-	//Setup Expectations
-	EXPECT_CALL(*permission_mock, accepts_changes())
-		.Times(2)
-		.WillOnce(Return(false))
-		.WillOnce(Return(true));
-
-	EXPECT_CALL(*permission_mock, permissions_revoke_removal(A<std::shared_ptr<Entity>>(), _))
-		.Times(1)
-		.WillOnce(Return(std::set<std::shared_ptr<Entity>>()));
-
-	//Do the calls
-	EXPECT_EQ(false, sorted->permissions_revoke_removal(a));
-	EXPECT_EQ(true, sorted->permissions_revoke_removal(b));
-}
-
-TEST(SortedContainerTests, CanGrantViewWithArgCallsSubObject)
-{
-	//Create the Permissions MockObject and Container
-	std::shared_ptr<::MockPermissions> permission_mock = std::make_shared<::MockPermissions>();
-	std::shared_ptr<sorted_container_component> sorted = std::make_shared<sorted_container_component>(permission_mock);
-
-	//Setup Expectations
-	EXPECT_CALL(*permission_mock, accepts_changes())
-		.Times(2)
-		.WillOnce(Return(false))
-		.WillOnce(Return(true));
-
-	EXPECT_CALL(*permission_mock, permissions_grant_view(A<std::string>(), _))
-		.Times(1)
-		.WillOnce(Return(std::set<std::shared_ptr<Entity>>()));
-
-	//Do the calls
-	EXPECT_EQ(false, sorted->permissions_grant_view("Apathy"));
-	EXPECT_EQ(true, sorted->permissions_grant_view("Kronos"));
-}
-
-TEST(SortedContainerTests, CanRevokeViewWithArgCallsSubObject)
-{
-	//Create the Permissions MockObject and Container
-	std::shared_ptr<::MockPermissions> permission_mock = std::make_shared<::MockPermissions>();
-	std::shared_ptr<sorted_container_component> sorted = std::make_shared<sorted_container_component>(permission_mock);
-
-	//Setup Expectations
-	EXPECT_CALL(*permission_mock, accepts_changes())
-		.Times(2)
-		.WillOnce(Return(false))
-		.WillOnce(Return(true));
-
-	EXPECT_CALL(*permission_mock, permissions_revoke_view(A<std::string>(), _))
-		.Times(1)
-		.WillOnce(Return(std::set<std::shared_ptr<Entity>>()));
-
-	//Do the calls
-	EXPECT_EQ(false, sorted->permissions_revoke_view("Apathy"));
-	EXPECT_EQ(true, sorted->permissions_revoke_view("Kronos"));
-}
-
-TEST(SortedContainerTests, CanGrantInsertWithArgCallsSubObject)
-{
-	//Create the Permissions MockObject and Container
-	std::shared_ptr<::MockPermissions> permission_mock = std::make_shared<::MockPermissions>();
-	std::shared_ptr<sorted_container_component> sorted = std::make_shared<sorted_container_component>(permission_mock);
-
-	//Setup Expectations
-	EXPECT_CALL(*permission_mock, accepts_changes())
-		.Times(2)
-		.WillOnce(Return(false))
-		.WillOnce(Return(true));
-
-	EXPECT_CALL(*permission_mock, permissions_grant_insert(A<std::string>(), _))
-		.Times(1)
-		.WillOnce(Return(std::set<std::shared_ptr<Entity>>()));
-
-	//Do the calls
-	EXPECT_EQ(false, sorted->permissions_grant_insert("Apathy"));
-	EXPECT_EQ(true, sorted->permissions_grant_insert("Kronos"));
-}
-
-TEST(SortedContainerTests, CanRevokeInsertWithArgCallsSubObject)
-{
-//Create the Permissions MockObject and Container
-	std::shared_ptr<::MockPermissions> permission_mock = std::make_shared<::MockPermissions>();
-	std::shared_ptr<sorted_container_component> sorted = std::make_shared<sorted_container_component>(permission_mock);
-
-	//Setup Expectations
-	EXPECT_CALL(*permission_mock, accepts_changes())
-		.Times(2)
-		.WillOnce(Return(false))
-		.WillOnce(Return(true));
-
-	EXPECT_CALL(*permission_mock, permissions_revoke_insert(A<std::string>(), _))
-		.Times(1)
-		.WillOnce(Return(std::set<std::shared_ptr<Entity>>()));
-
-	//Do the calls
-	EXPECT_EQ(false, sorted->permissions_revoke_insert("Apathy"));
-	EXPECT_EQ(true, sorted->permissions_revoke_insert("Kronos"));
-}
-
-TEST(SortedContainerTests, CanGrantRemoveWithArgCallsSubObject)
-{
-//Create the Permissions MockObject and Container
-	std::shared_ptr<::MockPermissions> permission_mock = std::make_shared<::MockPermissions>();
-	std::shared_ptr<sorted_container_component> sorted = std::make_shared<sorted_container_component>(permission_mock);
-
-	//Setup Expectations
-	EXPECT_CALL(*permission_mock, accepts_changes())
-		.Times(2)
-		.WillOnce(Return(false))
-		.WillOnce(Return(true));
-
-	EXPECT_CALL(*permission_mock, permissions_grant_removal(A<std::string>(), _))
-		.Times(1)
-		.WillOnce(Return(std::set<std::shared_ptr<Entity>>()));
-
-	//Do the calls
-	EXPECT_EQ(false, sorted->permissions_grant_removal("Apathy"));
-	EXPECT_EQ(true, sorted->permissions_grant_removal("Kronos"));
-}
-
-TEST(SortedContainerTests, CanRevokeRemoveWithArgCallsSubObject)
-{
-	//Create the Permissions MockObject and Container
-	std::shared_ptr<::MockPermissions> permission_mock = std::make_shared<::MockPermissions>();
-	std::shared_ptr<sorted_container_component> sorted = std::make_shared<sorted_container_component>(permission_mock);
-
-	//Setup Expectations
-	EXPECT_CALL(*permission_mock, accepts_changes())
-		.Times(2)
-		.WillOnce(Return(false))
-		.WillOnce(Return(true));
-
-	EXPECT_CALL(*permission_mock, permissions_revoke_removal(A<std::string>(), _))
-		.Times(1)
-		.WillOnce(Return(std::set<std::shared_ptr<Entity>>()));
-
-	//Do the calls
-	EXPECT_EQ(false, sorted->permissions_revoke_removal("Apathy"));
-	EXPECT_EQ(true, sorted->permissions_revoke_removal("Kronos"));
-}
-
 TEST(SortedContainerTests, EmptyCallsSubObject)
 {
 	//Create the Permissions MockObject and Container
 	std::shared_ptr<::MockPermissions> permission_mock = std::make_shared<::MockPermissions>();
-	std::shared_ptr<sorted_container_component> sorted = std::make_shared<sorted_container_component>(permission_mock);
+	std::shared_ptr<sorted_container_component> sorted = std::make_shared<sorted_container_component>();
 
 	EXPECT_CALL(*permission_mock, size())
 		.Times(2)
@@ -646,7 +308,7 @@ TEST(SortedContainerTests, FullCallsSubObject)
 {
 	//Create the Permissions MockObject and Container
 	std::shared_ptr<::MockPermissions> permission_mock = std::make_shared<::MockPermissions>();
-	std::shared_ptr<sorted_container_component> sorted = std::make_shared<sorted_container_component>(permission_mock);
+	std::shared_ptr<sorted_container_component> sorted = std::make_shared<sorted_container_component>();
 
 	EXPECT_CALL(*permission_mock, capacity())
 		.Times(2)
@@ -666,7 +328,7 @@ TEST(SortedContainerTests, SizeCallsSubObject)
 {
 	//Create the Permissions MockObject and Container
 	std::shared_ptr<::MockPermissions> permission_mock = std::make_shared<::MockPermissions>();
-	std::shared_ptr<sorted_container_component> sorted = std::make_shared<sorted_container_component>(permission_mock);
+	std::shared_ptr<sorted_container_component> sorted = std::make_shared<sorted_container_component>();
 
 	EXPECT_CALL(*permission_mock, size())
 		.Times(2)
@@ -681,7 +343,7 @@ TEST(SortedContainerTests, CapacityCallsSubObject)
 {
 	//Create the Permissions MockObject and Container
 	std::shared_ptr<::MockPermissions> permission_mock = std::make_shared<::MockPermissions>();
-	std::shared_ptr<sorted_container_component> sorted = std::make_shared<sorted_container_component>(permission_mock);
+	std::shared_ptr<sorted_container_component> sorted = std::make_shared<sorted_container_component>();
 
 	EXPECT_CALL(*permission_mock, capacity())
 		.Times(2)
@@ -696,7 +358,7 @@ TEST(SortedContainerTests, SetCapacityCallsSubObject)
 {
 	//Create the Permissions MockObject and Container
 	std::shared_ptr<::MockPermissions> permission_mock = std::make_shared<::MockPermissions>();
-	std::shared_ptr<sorted_container_component> sorted = std::make_shared<sorted_container_component>(permission_mock);
+	std::shared_ptr<sorted_container_component> sorted = std::make_shared<sorted_container_component>();
 
 	EXPECT_CALL(*permission_mock, capacity(_))
 		.Times(2)
@@ -710,7 +372,7 @@ TEST(SortedContainerTests, SetCapacityCallsSubObject)
 TEST(SortedContainerTests, HasEntityWorks)
 {
 	std::shared_ptr<::MockPermissions> permission_mock = std::make_shared<::MockPermissions>();
-	std::shared_ptr<sorted_container_component> sorted = std::make_shared<sorted_container_component>(permission_mock);
+	std::shared_ptr<sorted_container_component> sorted = std::make_shared<sorted_container_component>();
 	std::shared_ptr<Entity> a = std::make_shared<Entity>();
 	std::shared_ptr<Entity> b = std::make_shared<Entity>();
 
@@ -732,7 +394,7 @@ TEST(SortedContainerTests, HasEntityWorks)
 TEST(SortedContainerTests, ContainedObjectsWorks)
 {
 	std::shared_ptr<::MockPermissions> permission_mock = std::make_shared<::MockPermissions>();
-	std::shared_ptr<sorted_container_component> sorted = std::make_shared<sorted_container_component>(permission_mock);
+	std::shared_ptr<sorted_container_component> sorted = std::make_shared<sorted_container_component>();
 
 	std::shared_ptr<Entity> a = std::make_shared<Entity>();
 	std::shared_ptr<Entity> b = std::make_shared<Entity>();
@@ -755,7 +417,7 @@ TEST(SortedContainerTests, ContainedObjectsWorks)
 TEST(SortedContainerTests, EntityInSlotReturnsNull)
 {
 	std::shared_ptr<::MockPermissions> permission_mock = std::make_shared<::MockPermissions>();
-	std::shared_ptr<sorted_container_component> sorted = std::make_shared<sorted_container_component>(permission_mock);
+	std::shared_ptr<sorted_container_component> sorted = std::make_shared<sorted_container_component>();
 
 	EXPECT_EQ(nullptr, sorted->entity_in_slot(std::shared_ptr<Entity>(), "ship_pilot"));
 }

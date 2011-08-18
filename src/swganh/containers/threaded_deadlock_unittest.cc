@@ -35,11 +35,13 @@ TEST(DeadlockTests, Itensity1)
 			containerChain.push_back(a);
 			break;
 		case 1:
-			a->AttachComponent(std::make_shared<sorted_container_component>(std::make_shared<FullPermissions>()));
+			a->AttachComponent(std::make_shared<::FullPermissions>());
+			a->AttachComponent(std::make_shared<sorted_container_component>());
 			containerChain.push_back(a);
 			break;
 		case 2:
-			a->AttachComponent(std::make_shared<slotted_container_component>(std::make_shared<FullPermissions>()));
+			a->AttachComponent(std::make_shared<::FullPermissions>());
+			a->AttachComponent(std::make_shared<slotted_container_component>());
 			containerChain.push_back(a);
 			break;
 		}

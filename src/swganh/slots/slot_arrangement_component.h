@@ -1,37 +1,22 @@
-#ifndef SLOT_ARRANGEMENT_INTERFACE_H
-#define SLOT_ARRANGEMENT_INTERFACE_H
+#include "slot_arrangement_interface.h"
 
-#include <anh/component/base_component.h>
-#include <anh/hash_string.h>
+namespace swganh { namespace slots {
 
-#include <set>
-#include <vector>
+	class SlotArrangementComponent : public SlotArrangementInterface 
+	{
+	public:
 
-namespace swganh
-{
-namespace slots
-{
+		SlotArrangementComponent() : SlotArrangementInterface("SlotArrangement") {}
 
-class SlotArrangementComponent : public anh::component::BaseComponent
-{
-public:
-	SlotArrangementComponent() : anh::component::BaseComponent("SlotArrangement", "") {}
+		virtual void add_arrangement(const std::set<anh::HashString>& slot);
+		virtual void remove_arrangement(size_t position);
 
-	void add_arrangement(const std::set<anh::HashString>& slot) { slots_occupied_.push_back(slot); }
-	void remove_arrangement(size_t position) { slots_occupied_.erase(slots_occupied_.begin() + position); }
+		virtual size_t arrangements();
+		virtual const std::set<anh::HashString>& arrangement(unsigned int arrangement_id);
 
-	size_t arrangements() { return slots_occupied_.size(); }
-	const std::set<anh::HashString>& arrangement(unsigned int arrangement_id) { return slots_occupied_[arrangement_id]; }
+	private:
+		std::vector<std::set<anh::HashString>> slots_;
+	};
 
-	static std::shared_ptr<SlotArrangementComponent> NullComponent;
-
-private:
-
-	std::vector<std::set<anh::HashString>> slots_occupied_;
-
-};
-
-};
-};
-
-#endif
+}
+}

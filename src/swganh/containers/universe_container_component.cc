@@ -1,16 +1,24 @@
 #include "universe_container_component.h"
 #include <swganh/transform/transform_component.h>
+#include <swganh/component/connection_component_interface.h>
 #include <anh/component/entity.h>
 
 #include <limits>
 #include <math.h>
 
+#include <swganh/baseline/baseline_event.h>
+
 #include <boost/thread/locks.hpp>
 
 using namespace swganh::transform;
+using namespace swganh::baseline;
 using namespace swganh::containers;
+using namespace swganh::component;
+using namespace swganh::containers::permissions;
 using namespace swganh::regions;
 using namespace anh::component;
+
+universe_container_component::universe_container_component() : ContainerComponentInterface("Universe") {}
 
 universe_container_component::universe_container_component(float map_size, float bucket_size, float viewing_range, bool _3_dimensional_)
 	: ContainerComponentInterface("Universe")
@@ -20,6 +28,25 @@ universe_container_component::universe_container_component(float map_size, float
 	, buckets_per_row_(ceil(map_size / bucket_size))
 	, buckets_sq(buckets_per_row_*buckets_per_row_)
 	, is_3D_(_3_dimensional_)
+{
+	construct_();
+}
+
+void universe_container_component::Init(boost::property_tree::ptree& pt)
+{
+	float map_size = pt.get<float>("map_size", 16384);
+	bucket_width_ = pt.get<float>("bucket_size", 64);
+	viewing_range_ = pt.get<float>("viewing_range", 128);
+	is_3D_ = pt.get<bool>("is_3D", false);
+
+	half_map_width_ = map_size/2;
+	buckets_per_row_ = ceil(map_size / bucket_width_);
+	buckets_sq = buckets_per_row_*buckets_per_row_;
+
+	construct_();
+}
+
+void universe_container_component::construct_()
 {
 	size_t id = 0;
 	for(unsigned int i = 0; i < ((is_3D_) ? buckets_per_row_ : 1); ++i) 
@@ -84,19 +111,24 @@ bool universe_container_component::insert(std::shared_ptr<anh::component::Entity
 		}
 	}
 
+	auto baseline_event = anh::event_dispatcher::make_shared_event("BaselineEvent", BaselineEvent(what, true));
+
 	//For Every Bucket in Associated Bucket Relevant Bucket list
 	itr = assoc_bucket->relevant_buckets_.begin();
 	for(; itr != end; ++itr)
 	{
 		//For Every Object in the Bucket
 		std::for_each((*itr)->contained_objects_.begin(), (*itr)->contained_objects_.end(), [&] (std::shared_ptr<Entity> e) {
-			//Send Baseline
+			baseline_event->receiving_entities_.push_back(e);
 
 			//call make_aware on the object
 			e->QueryInterface<ContainerComponentInterface>("Container")->make_aware(what);
 			what->QueryInterface<ContainerComponentInterface>("Container")->make_aware(e);
 		}); //End For
 	} //End For
+
+	//Send Event
+	what->QueryInterface<ConnectionComponentInterface>("connection")->session()->server()->event_dispatcher()->triggerAsync(baseline_event);
 
 	//Insert into the associated bucket
 	assoc_bucket->contained_objects_.insert(what);
@@ -223,7 +255,7 @@ bool universe_container_component::remove(std::shared_ptr<anh::component::Entity
 bool universe_container_component::transfer_to(std::shared_ptr<anh::component::Entity> who, std::shared_ptr<anh::component::Entity> what, std::shared_ptr<ContainerComponentInterface> recv_container, bool force_insertion, bool force_removal)
 {
 	//If permissions will let this happen
-	if(recv_container->permissions_can_insert(who, what) || force_insertion)
+	if(force_insertion || recv_container->entity()->QueryInterface<ContainerPermissionsInterface>("ContainerPermissions")->can_insert(who, what))
 	{
 		//Get the Transform Component
 		auto transform_what = what->QueryInterface<TransformComponentInterface>("Transform");
@@ -303,6 +335,8 @@ bool universe_container_component::transfer_to(std::shared_ptr<anh::component::E
 			recv_container->intrl_insert_(what, shared_from_this());
 			old_parent->contained_objects_.erase(what);
 
+			auto baseline_event = anh::event_dispatcher::make_shared_event("BaselineEvent", BaselineEvent(what, true));
+
 			//For Every Bucket in the set
 			itr = all_buckets.begin();
 			for(; itr != end; ++itr)
@@ -332,11 +366,15 @@ bool universe_container_component::transfer_to(std::shared_ptr<anh::component::E
 					//For Every Object in Bucket
 					std::for_each((*itr)->contained_objects_.begin(), (*itr)->contained_objects_.end(), [&] (std::shared_ptr<Entity> e) {
 						//Send Create in Duplex
+						baseline_event->receiving_entities_.push_back(e);
+
 						//Call make_aware for object
 						e->QueryInterface<ContainerComponentInterface>("Container")->make_aware(what);
 					}); //End For
 				}
 			} //End For
+
+			what->QueryInterface<ConnectionComponentInterface>("connection")->session()->server()->event_dispatcher()->triggerAsync(baseline_event);
 
 			itr = all_buckets.begin();
 			for(; itr != end; ++itr)
@@ -506,6 +544,8 @@ void universe_container_component::state_update(std::shared_ptr<anh::component::
 
 		});
 
+		auto baseline_event = anh::event_dispatcher::make_shared_event("BaselineEvent", BaselineEvent(what, true));
+
 		//For Every Bucket in the set
 		itr = all_buckets.begin();
 		for(; itr != end; ++itr)
@@ -535,11 +575,15 @@ void universe_container_component::state_update(std::shared_ptr<anh::component::
 				//For Every Object in Bucket
 				std::for_each((*itr)->contained_objects_.begin(), (*itr)->contained_objects_.end(), [&] (std::shared_ptr<Entity> e) {
 					//Send Create in Duplex
+					baseline_event->receiving_entities_.push_back(e);
+
 					//Call make_aware for object
 					e->QueryInterface<ContainerComponentInterface>("Container")->make_aware(what);
 				}); //End For
 			}
 		} //End For
+
+		what->QueryInterface<ConnectionComponentInterface>("connection")->session()->server()->event_dispatcher()->triggerAsync(baseline_event);
 
 		itr = all_buckets.begin();
 		for(; itr != end; ++itr)

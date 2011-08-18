@@ -5,6 +5,7 @@
 #include <boost/thread/locks.hpp>
 
 using namespace swganh::containers;
+using namespace swganh::containers::permissions;
 using namespace swganh::slots;
 using namespace anh::component;
 
@@ -22,7 +23,7 @@ bool slotted_container_component::intrl_insert_(std::shared_ptr<Entity> what, st
 
 		//Okay, so this process is pretty simple, but must be done correctly.
 		//First we want to make it possible to use any arrangement the object has in priority order.
-		auto slot_arrangements = what->QueryInterface<SlotArrangementComponent>("SlotArrangement");
+		auto slot_arrangements = what->QueryInterface<SlotArrangementInterface>("SlotArrangement");
 		for(size_t i = 0; i < slot_arrangements->arrangements(); ++i)
 		{
 			auto& arrangement = slot_arrangements->arrangement(i);
@@ -63,7 +64,7 @@ bool slotted_container_component::intrl_insert_(std::shared_ptr<Entity> what, st
 						}
 					});
 
-					permissions_->inserted(what);
+					entity()->QueryInterface<ContainerPermissionsInterface>("ContainerPermissions")->inserted(what);
 					return true;
 				}
 				else
@@ -100,7 +101,7 @@ bool slotted_container_component::intrl_insert_(std::shared_ptr<Entity> what, st
 			
 			if(ret_val)
 			{
-				permissions_->inserted(what);
+				entity()->QueryInterface<ContainerPermissionsInterface>("ContainerPermissions")->inserted(what);
 			}
 		}
 	}
@@ -118,7 +119,7 @@ bool slotted_container_component::intrl_insert_(std::shared_ptr<Entity> what, st
 			}
 
 			//Notify our permissions object
-			permissions_->removed(e);
+			entity()->QueryInterface<ContainerPermissionsInterface>("ContainerPermissions")->removed(e);
 		});
 	}
 	return ret_val;
@@ -127,6 +128,7 @@ bool slotted_container_component::intrl_insert_(std::shared_ptr<Entity> what, st
 bool slotted_container_component::remove_intrl_(const std::set<anh::HashString>& slots)
 {
 	bool removed_something = false;
+	auto permissions = entity()->QueryInterface<ContainerPermissionsInterface>("ContainerPermissions");
 
 	auto end = slots.end();
 	for(auto itr = slots.begin(); itr != end; ++itr)
@@ -134,7 +136,7 @@ bool slotted_container_component::remove_intrl_(const std::set<anh::HashString>&
 		auto dead_itr = slotted_entities_.find(*itr);
 		if(dead_itr != slotted_entities_.end())
 		{
-			permissions_->removed(dead_itr->second.entity);
+			permissions->removed(dead_itr->second.entity);
 			contained_objects_.erase(dead_itr->second.entity);
 			slotted_entities_.erase(dead_itr);
 			removed_something = true;
@@ -146,9 +148,9 @@ bool slotted_container_component::remove_intrl_(const std::set<anh::HashString>&
 
 std::shared_ptr<Entity> slotted_container_component::entity_in_slot(std::shared_ptr<Entity> who, std::string slot_name)
 {
-	boost::shared_lock<boost::shared_mutex> lock(intrl_lock_);
-	if(permissions_->can_view(who))
+	if(entity()->QueryInterface<ContainerPermissionsInterface>("ContainerPermissions")->can_view(who))
 	{
+		boost::shared_lock<boost::shared_mutex> lock(intrl_lock_);
 		auto itr = slotted_entities_.find(slot_name);
 		if(itr != slotted_entities_.end())
 		{
@@ -163,16 +165,12 @@ bool slotted_container_component::insert(std::shared_ptr<Entity> who, std::share
 	what->parent_intrl_(entity());
 
 	bool ret_val = false;
-
-	intrl_lock_.lock_shared();
-	if(force_insertion || permissions_->can_insert(who, what))
+	if(force_insertion || entity()->QueryInterface<ContainerPermissionsInterface>("ContainerPermissions")->can_insert(who, what))
 	{
-		intrl_lock_.unlock_shared();
 		ret_val = intrl_insert_(what, nullptr);
 		if(ret_val)
 		{
 			boost::shared_lock<boost::shared_mutex> lock;
-
 			std::for_each(aware_entities_.begin(), aware_entities_.end(), [] (std::shared_ptr<Entity> e) {
 				//CALL TO KRONOS CREATE
 			});;
@@ -185,15 +183,15 @@ bool slotted_container_component::insert(std::shared_ptr<Entity> who, std::share
 bool slotted_container_component::insert(std::shared_ptr<anh::component::Entity> who, std::shared_ptr<anh::component::Entity> what, unsigned int id, bool force_insertion)
 {
 	bool ret_val = false;
-	auto component = what->QueryInterface<SlotArrangementComponent>("SlotArrangement");
+	auto component = what->QueryInterface<SlotArrangementInterface>("SlotArrangement");
 	std::set<std::shared_ptr<Entity>> removed_objects;
 	if(id < component->arrangements())
 	{
 		const std::set<anh::HashString>& arrangement = component->arrangement(id);
-		boost::upgrade_lock<boost::shared_mutex> lock(intrl_lock_);
-		if(force_insertion || permissions_->can_insert(who, what, arrangement))
+		if(force_insertion || entity()->QueryInterface<ContainerPermissionsInterface>("ContainerPermissions")->can_insert(who, what, arrangement))
 		{
 			ret_val = true;
+			boost::upgrade_lock<boost::shared_mutex> lock(intrl_lock_);
 			boost::upgrade_to_unique_lock<boost::shared_mutex> unique(lock);
 			std::find_if(arrangement.begin(), arrangement.end(), [&, this] (const anh::HashString& s) -> bool {
 				auto itr = slotted_entities_.find(s);
@@ -216,7 +214,7 @@ bool slotted_container_component::insert(std::shared_ptr<anh::component::Entity>
 			});
 
 			if(ret_val)
-				permissions_->inserted(what);
+				entity()->QueryInterface<ContainerPermissionsInterface>("ContainerPermissions")->inserted(what);
 		}
 	}
 
@@ -244,10 +242,10 @@ bool slotted_container_component::insert(std::shared_ptr<anh::component::Entity>
 
 bool slotted_container_component::remove(std::shared_ptr<Entity> who, std::shared_ptr<Entity> what, bool force_removal)
 {
-	boost::upgrade_lock<boost::shared_mutex> lock(intrl_lock_);
-	if(force_removal || permissions_->can_remove(who, what))
+	if(force_removal || entity()->QueryInterface<ContainerPermissionsInterface>("ContainerPermissions")->can_remove(who, what))
 	{
 		bool should_update = false;
+		boost::upgrade_lock<boost::shared_mutex> lock(intrl_lock_);
 		{ //Scope to allow the unique lock to fall out of scope
 			
 			//Unfortunately we do not know which arrangement was used for this entity. So our only option is to iterate over the
@@ -271,8 +269,8 @@ bool slotted_container_component::remove(std::shared_ptr<Entity> who, std::share
 			if(found_arrangement)
 			{
 				boost::upgrade_to_unique_lock<boost::shared_mutex> uniqueLock(lock);
-				should_update = remove_intrl_(what->QueryInterface<SlotArrangementComponent>("SlotArrangement")->arrangement(arrangement_id));
-				permissions_->removed(what);
+				should_update = remove_intrl_(what->QueryInterface<SlotArrangementInterface>("SlotArrangement")->arrangement(arrangement_id));
+				entity()->QueryInterface<ContainerPermissionsInterface>("ContainerPermissions")->removed(what);
 				should_update = true;
 			}
 		}
@@ -297,11 +295,11 @@ bool slotted_container_component::remove(std::shared_ptr<Entity> who, std::share
 
 bool slotted_container_component::transfer_to(std::shared_ptr<Entity> who, std::shared_ptr<Entity> what, std::shared_ptr<ContainerComponentInterface> recv_container, bool force_insertion, bool force_removal)
 {
-	boost::upgrade_lock<boost::shared_mutex> lock(intrl_lock_);
-	if(recv_container != nullptr && force_insertion || recv_container->permissions_can_insert(who, what))
+	if(recv_container != nullptr && force_insertion || recv_container->entity()->QueryInterface<ContainerPermissionsInterface>("ContainerPermissions")->can_insert(who, what))
 	{
-		if(force_removal || permissions_->can_remove(who, what))
+		if(force_removal || entity()->QueryInterface<ContainerPermissionsInterface>("ContainerPermissions")->can_remove(who, what))
 		{
+			boost::upgrade_lock<boost::shared_mutex> lock(intrl_lock_);
 			std::set<std::shared_ptr<Entity>> all_awares;
 
 			std::set<std::shared_ptr<Entity>> recv_awares = recv_container->aware_entities(what);
@@ -356,18 +354,12 @@ bool slotted_container_component::transfer_to(std::shared_ptr<Entity> who, std::
 			
 			if(found_arrangement)
 			{
-				remove_intrl_(what->QueryInterface<SlotArrangementComponent>("SlotArrangement")->arrangement(arrangement_id));
-				permissions_->removed(what);
+				remove_intrl_(what->QueryInterface<SlotArrangementInterface>("SlotArrangement")->arrangement(arrangement_id));
+				entity()->QueryInterface<ContainerPermissionsInterface>("ContainerPermissions")->removed(what);
 			}
 
 			return true;
 		}
 	}
 	return false;
-}
-
-bool slotted_container_component::permissions_can_insert(std::shared_ptr<anh::component::Entity> who, std::shared_ptr<anh::component::Entity> what, const std::set<anh::HashString>& arrangement_to_use)
-{
-	boost::shared_lock<boost::shared_mutex> lock(intrl_lock_);
-	return permissions_->can_insert(who, what, arrangement_to_use);
 }

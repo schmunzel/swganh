@@ -2,6 +2,7 @@
 #define CONTAINER_PERMISSIONS_INTERFACE_H
 
 #include <anh/hash_string.h>
+#include <anh/component/base_component.h>
 #include <memory>
 #include <set>
 
@@ -13,13 +14,16 @@ namespace component
 };
 };
 
-namespace swganh
-{
-namespace containers
-{
-class ContainerPermissionsInterface
+namespace swganh { namespace containers { namespace permissions {
+
+class NullContainerPermissions;
+
+class ContainerPermissionsInterface : public anh::component::BaseComponent
 {
 public:
+	ContainerPermissionsInterface(const anh::component::ComponentType& type) 
+		: anh::component::BaseComponent("ContainerPermissions", type) {}
+
 	virtual bool can_view(std::shared_ptr<anh::component::Entity> who) = 0;
 	virtual bool can_insert(std::shared_ptr<anh::component::Entity> who, std::shared_ptr<anh::component::Entity> what) = 0;
 	virtual bool can_insert(std::shared_ptr<anh::component::Entity> who, std::shared_ptr<anh::component::Entity> what, const std::set<anh::HashString>& arrangement_to_use) = 0;
@@ -46,11 +50,15 @@ public:
 
 	virtual size_t capacity() = 0;
 	virtual bool capacity(size_t new_capacity) = 0;
+
+	static std::shared_ptr<NullContainerPermissions> NullComponent;
 };
 
-class NullContainerPermission : public ContainerPermissionsInterface
+class NullContainerPermissions : public ContainerPermissionsInterface
 {
 public:
+	NullContainerPermissions() : ContainerPermissionsInterface("Null") {}
+
 	virtual size_t size() { return 0; }
 
 	virtual bool accepts_changes() { return false; }
@@ -79,6 +87,7 @@ public:
 
 	virtual size_t capacity() { return 0; }
 	virtual bool capacity(size_t new_capacity) { return false; }
+};
 };
 };
 };

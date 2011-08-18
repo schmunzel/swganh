@@ -1,0 +1,8 @@
+<entity type='space_dathomir' tags='static'>
+	<component type='universe_container'>
+		<map_size>16384</map_size>
+		<bucket_size>1024</bucket_size>
+		<viewing_range>2048</viewing_range>
+		<is_3D>true</is_3D>
+	</component>
+</entity>

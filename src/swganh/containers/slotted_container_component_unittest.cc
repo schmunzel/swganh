@@ -25,7 +25,7 @@ TEST(SlottedContainerTests, BasicSingleInsert)
 
 	//Create the Permissions MockObject and Container
 	std::shared_ptr<::MockPermissions> permission_mock = std::make_shared<::MockPermissions>();
-	std::shared_ptr<slotted_container_component> slotted = std::make_shared<slotted_container_component>(permission_mock);
+	std::shared_ptr<slotted_container_component> slotted = std::make_shared<slotted_container_component>();
 	
 	slotted->add_descriptor(descriptor_A);
 
@@ -60,7 +60,7 @@ TEST(SlottedContainerTests, BasicSingleInsertSpecific)
 
 	//Create the Permissions MockObject and Container
 	std::shared_ptr<::MockPermissions> permission_mock = std::make_shared<::MockPermissions>();
-	std::shared_ptr<slotted_container_component> slotted = std::make_shared<slotted_container_component>(permission_mock);
+	std::shared_ptr<slotted_container_component> slotted = std::make_shared<slotted_container_component>();
 	
 	slotted->add_descriptor(descriptor_A);
 
@@ -93,7 +93,7 @@ TEST(SlottedContainerTests, BadBasicSingleInsert)
 
 	//Create the Permissions MockObject and Container
 	std::shared_ptr<::MockPermissions> permission_mock = std::make_shared<::MockPermissions>();
-	std::shared_ptr<slotted_container_component> slotted = std::make_shared<slotted_container_component>(permission_mock);
+	std::shared_ptr<slotted_container_component> slotted = std::make_shared<slotted_container_component>();
 	
 	slotted->add_descriptor(descriptor_A);
 
@@ -126,7 +126,7 @@ TEST(SlottedContainerTests, DescriptorHasMoreSlots)
 
 	//Create the Permissions MockObject and Container
 	std::shared_ptr<::MockPermissions> permission_mock = std::make_shared<::MockPermissions>();
-	std::shared_ptr<slotted_container_component> slotted = std::make_shared<slotted_container_component>(permission_mock);
+	std::shared_ptr<slotted_container_component> slotted = std::make_shared<slotted_container_component>();
 	
 	slotted->add_descriptor(descriptor_A);
 
@@ -159,7 +159,7 @@ TEST(SlottedContainerTests, ArrangementHasMoreSlots)
 
 	//Create the Permissions MockObject and Container
 	std::shared_ptr<::MockPermissions> permission_mock = std::make_shared<::MockPermissions>();
-	std::shared_ptr<slotted_container_component> slotted = std::make_shared<slotted_container_component>(permission_mock);
+	std::shared_ptr<slotted_container_component> slotted = std::make_shared<slotted_container_component>();
 	
 	slotted->add_descriptor(descriptor_A);
 
@@ -191,7 +191,7 @@ TEST(SlottedContainerTests, SameArrangementReplacesOne)
 
 	//Create the Permissions MockObject and Container
 	std::shared_ptr<::MockPermissions> permission_mock = std::make_shared<::MockPermissions>();
-	std::shared_ptr<slotted_container_component> slotted = std::make_shared<slotted_container_component>(permission_mock);
+	std::shared_ptr<slotted_container_component> slotted = std::make_shared<slotted_container_component>();
 	
 	slotted->add_descriptor(descriptor_A);
 
@@ -236,7 +236,7 @@ TEST(SlottedContainerTests, SameArrangementReplacesMany)
 
 	//Create the Permissions MockObject and Container
 	std::shared_ptr<::MockPermissions> permission_mock = std::make_shared<::MockPermissions>();
-	std::shared_ptr<slotted_container_component> slotted = std::make_shared<slotted_container_component>(permission_mock);
+	std::shared_ptr<slotted_container_component> slotted = std::make_shared<slotted_container_component>();
 	
 	slotted->add_descriptor(descriptor_A);
 
@@ -299,7 +299,7 @@ TEST(SlottedContainerTests, SameArrangementReplacesManyWithNoise)
 
 	//Create the Permissions MockObject and Container
 	std::shared_ptr<::MockPermissions> permission_mock = std::make_shared<::MockPermissions>();
-	std::shared_ptr<slotted_container_component> slotted = std::make_shared<slotted_container_component>(permission_mock);
+	std::shared_ptr<slotted_container_component> slotted = std::make_shared<slotted_container_component>();
 	
 	slotted->add_descriptor(descriptor_A);
 
@@ -348,7 +348,7 @@ TEST(SlottedContainerTests, EntityInSlot)
 
 	//Create the Permissions MockObject and Container
 	std::shared_ptr<::MockPermissions> permission_mock = std::make_shared<::MockPermissions>();
-	std::shared_ptr<slotted_container_component> slotted = std::make_shared<slotted_container_component>(permission_mock);
+	std::shared_ptr<slotted_container_component> slotted = std::make_shared<slotted_container_component>();
 	
 	slotted->add_descriptor(descriptor_A);
 

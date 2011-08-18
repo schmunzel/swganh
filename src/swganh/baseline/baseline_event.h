@@ -11,17 +11,18 @@ namespace anh { namespace component {
 
 namespace swganh { namespace baseline {
 
-	class BaselineEvent {
+	class BaselineEvent  {
 	public:
 
-		BaselineEvent(std::shared_ptr<anh::component::Entity> e, std::list<std::shared_ptr<anh::component::Entity>> recv) 
+		BaselineEvent(std::shared_ptr<anh::component::Entity> entity, bool duplex = true) 
 		{
-			entity = e;
-			receiving_entities = recv;
+			entity_ = entity;
+			duplex_ = true;
 		}
 
-		std::shared_ptr<anh::component::Entity> entity;
-		std::list<std::shared_ptr<anh::component::Entity>> receiving_entities;
+		std::shared_ptr<anh::component::Entity> entity_;
+		std::list<std::shared_ptr<anh::component::Entity>> receiving_entities_;
+		bool duplex_;
 	};
 
 }

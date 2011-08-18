@@ -12,9 +12,8 @@ namespace containers
 class sorted_container_component : public swganh::containers::ContainerComponentInterface, public std::enable_shared_from_this<sorted_container_component>
 {
 public:
-	sorted_container_component(std::shared_ptr<swganh::containers::ContainerPermissionsInterface> permissions, anh::component::ComponentType type = anh::component::ComponentType("Sorted"))
+	sorted_container_component(anh::component::ComponentType type = anh::component::ComponentType("Sorted"))
 		: ContainerComponentInterface(type)
-		, permissions_(permissions)
 		, is_populated_(false) {}
 
 	//View Methods
@@ -35,26 +34,6 @@ public:
 
 	virtual void make_unaware(std::shared_ptr<anh::component::Entity> what);
 	virtual std::set<std::shared_ptr<anh::component::Entity>> aware_entities(std::shared_ptr<anh::component::Entity> caller_hint);
-
-	//Permission Methods
-	virtual bool permissions_can_view(std::shared_ptr<anh::component::Entity> who);
-	virtual bool permissions_can_insert(std::shared_ptr<anh::component::Entity> who, std::shared_ptr<anh::component::Entity> what);
-	virtual bool permissions_can_insert(std::shared_ptr<anh::component::Entity> who, std::shared_ptr<anh::component::Entity> what, const std::set<anh::HashString>& arrangement_to_use) { return false; }
-	virtual bool permissions_can_remove(std::shared_ptr<anh::component::Entity> who, std::shared_ptr<anh::component::Entity> what);
-
-	virtual bool permissions_grant_view(std::shared_ptr<anh::component::Entity> who);
-	virtual bool permissions_revoke_view(std::shared_ptr<anh::component::Entity> who);
-	virtual bool permissions_grant_insert(std::shared_ptr<anh::component::Entity> who);
-	virtual bool permissions_revoke_insert(std::shared_ptr<anh::component::Entity> who);
-	virtual bool permissions_grant_removal(std::shared_ptr<anh::component::Entity> who);
-	virtual bool permissions_revoke_removal(std::shared_ptr<anh::component::Entity> who);
-
-	virtual bool permissions_grant_view(std::string argument);
-	virtual bool permissions_revoke_view(std::string argument);
-	virtual bool permissions_grant_insert(std::string argument);
-	virtual bool permissions_revoke_insert(std::string argument);
-	virtual bool permissions_grant_removal(std::string argument);
-	virtual bool permissions_revoke_removal(std::string argument);
 
 	//Size/Capacity Methods
 	virtual bool empty();
@@ -77,7 +56,6 @@ protected:
 
 	std::set<std::shared_ptr<anh::component::Entity>> aware_entities_;
 	std::set<std::shared_ptr<anh::component::Entity>> contained_objects_;
-	std::shared_ptr<swganh::containers::ContainerPermissionsInterface> permissions_;
 };
 };
 };

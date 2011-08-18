@@ -123,14 +123,14 @@ namespace baseline { namespace baseline_deltas {
 
 		bd->attach_updatable(1, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
 			//Default Name
-			b.write<std::string>("Kronos");
+			b.write<std::string>("Kronos Powerking");
 			b.write<std::uint32_t>(0);
 			b.write<std::string>("");
 		});
 
 		bd->attach_updatable(2, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {
 			//Custom Name
-			b.write<std::wstring>(L"Kronos");
+			b.write<std::wstring>(L"Kronos Powerking");
 		});
 
 		bd->attach_updatable(3, [] (std::shared_ptr<anh::component::Entity>& e, anh::ByteBuffer& b) {

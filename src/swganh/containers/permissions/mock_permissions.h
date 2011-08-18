@@ -7,10 +7,12 @@
 namespace 
 {
 
-class MockPermissions : public swganh::containers::ContainerPermissionsInterface
+class MockPermissions : public swganh::containers::permissions::ContainerPermissionsInterface
 {
 public:
 	
+	MockPermissions() : ContainerPermissionsInterface("Mock") {}
+
 	MOCK_METHOD1(can_view, bool(std::shared_ptr<anh::component::Entity>));
 	MOCK_METHOD2(can_insert, bool(std::shared_ptr<anh::component::Entity>, std::shared_ptr<anh::component::Entity>));
 	MOCK_METHOD3(can_insert, bool(std::shared_ptr<anh::component::Entity>, std::shared_ptr<anh::component::Entity>, const std::set<anh::HashString>&));
@@ -40,9 +42,12 @@ public:
 private:
 };
 
-class FullPermissions : public swganh::containers::ContainerPermissionsInterface
+class FullPermissions : public swganh::containers::permissions::ContainerPermissionsInterface
 {
 public:
+
+	FullPermissions() : ContainerPermissionsInterface("FullMock") {}
+
 	virtual bool can_view(std::shared_ptr<anh::component::Entity> who) { return true; }
 	virtual bool can_insert(std::shared_ptr<anh::component::Entity> who, std::shared_ptr<anh::component::Entity> what) { return true; }
 	virtual bool can_insert(std::shared_ptr<anh::component::Entity> who, std::shared_ptr<anh::component::Entity> what, const std::set<anh::HashString>& arrangement_to_use) { return true; }

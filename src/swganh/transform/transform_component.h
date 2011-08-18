@@ -72,6 +72,9 @@ public:
 	void remove_region(std::shared_ptr<swganh::regions::RegionInterface> region);
 	std::set<std::shared_ptr<swganh::regions::RegionInterface>> regions();
 
+	virtual void pos_(const glm::vec3& pos) { position_ = pos; }
+	virtual void rot_(const glm::quat& rot) { rotation_ = rot; }
+
 private:
 	std::set<std::shared_ptr<swganh::regions::RegionInterface>> regions_;
 
