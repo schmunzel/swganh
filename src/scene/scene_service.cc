@@ -62,8 +62,9 @@
 #include "swganh/containers/slotted_container_component.h"
 #include "swganh/containers/sorted_container_component.h"
 
-#include "swganh/transform/transform_component.h"
 #include "swganh/component/connection_component.h"
+#include "swganh/scene/messages/data_transform.h"
+#include "swganh/transform/transform_component.h"
 
 using namespace swganh::scene;
 using namespace swganh::scene::messages;
@@ -108,10 +109,19 @@ void SceneService::onStart()
 
 void SceneService::onStop() {}
 
+void SceneService::HandleTransform_(std::shared_ptr<swganh::connection::ConnectionClient> client, const swganh::scene::messages::DataTransform& transform)
+{
+    DLOG(WARNING) << "HandleTransform Triggered";
+}
+
 void SceneService::subscribe() {
     RegisterComponentCreators();
     auto connection_service = std::static_pointer_cast<BaseConnectionService>(kernel()->GetServiceManager()->GetService("ConnectionService"));
-    
+
+    connection_service->RegisterMessageHandler<DataTransform>(
+            bind(&SceneService::HandleTransform_, this, placeholders::_1, placeholders::_2)
+        );
+
     kernel()->GetEventDispatcher()->subscribe("SelectCharacterLogin",[this](shared_ptr<EventInterface> incoming_event) ->bool {
         auto select_character = static_pointer_cast<BasicEvent<swganh::character::CharacterLoginData>>(incoming_event);
         return AddPlayerToScene(*select_character);
@@ -251,7 +261,8 @@ bool SceneService::AddPlayerToScene(swganh::character::CharacterLoginData charac
     CmdStartScene start_scene;
     // @TODO: Replace with configurable value
     start_scene.ignore_layout = 0;
-    start_scene.character_id = entity->id();
+    // set this to the creature...
+    start_scene.character_id = character.character_id;
     start_scene.terrain_map = character.terrain_map;
     start_scene.position = character.position;
     start_scene.shared_race_template = "object/creature/player/shared_" + character.race + "_" + character.gender + ".iff";

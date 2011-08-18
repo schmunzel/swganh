@@ -1,0 +1,4 @@
+<entity type='creature' tags='creature' template='object/creature/player/shared_creature.iff'>
+	<component type='transform'>
+	</component>
+</entity>
