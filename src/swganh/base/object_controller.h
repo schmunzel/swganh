@@ -52,6 +52,7 @@ struct ObjectControllerMessage {
             assert(true && "opcodes don't match, expected:" + opcode );
             return;
         }
+        uint32_t header = buffer.read<uint32_t>();
         object_id = buffer.read<uint64_t>();
         uint32_t sub_opcode = buffer.read<uint32_t>();
         if (sub_opcode != T::sub_opcode()) {
