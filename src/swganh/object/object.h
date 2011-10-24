@@ -216,6 +216,20 @@ public:
 	uint32_t GetSceneId() { return scene_id_; }
 	void SetSceneId(uint32_t scene_id);
 
+	/**
+     * Returns the id of the bucket were in
+     *
+     * @param bucket_id_ The id of the bucket
+     */
+	uint32_t GetBucketId() { return bucket_id_; }
+	
+	/**
+     * Sets the id of the bucket were in
+     *
+     * @param bucket_id_ The id of the bucket
+     */
+	void SetBucketId(uint32_t bucket_id);
+
     /**
      * Stores a deltas message update for the object.
      *
@@ -241,6 +255,7 @@ public:
     virtual boost::optional<swganh::messages::BaselinesMessage> GetBaseline8() { return boost::optional<swganh::messages::BaselinesMessage>(); }
     virtual boost::optional<swganh::messages::BaselinesMessage> GetBaseline9() { return boost::optional<swganh::messages::BaselinesMessage>(); }
     
+	//this is going to be the type based on enum?
     virtual uint32_t GetType() const { return 0; }
         
     swganh::messages::BaselinesMessage CreateBaselinesMessage(uint16_t view_type, uint16_t opcount = 0) const;
@@ -276,6 +291,7 @@ private:
 
     bool is_dirty_;
 
+	uint32_t bucket_id_;			 // the bucket in the si the Object is in
     uint64_t object_id_;             // create
 	uint32_t scene_id_;				 // create
     std::string template_string_;    // create

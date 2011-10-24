@@ -121,7 +121,7 @@ public:
 
     // CREO
     uint32_t GetType() const;
-    const static uint32_t type = 0x4352454F;
+    const static uint32_t type = 0x4352454F; //hex for creo -> opcode of the creo Packettype
 
     void SetBankCredits(uint32_t bank_credits);
     void SetCashCredits(uint32_t cash_credits);

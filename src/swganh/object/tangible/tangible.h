@@ -19,7 +19,7 @@ class Tangible : public BaseTangible
 public:
     Tangible();
 
-    // TANO
+    // TANO this is the hexcode for the tano
     virtual uint32_t GetType() const { return Tangible::type; }
     const static uint32_t type = 0x54414e4f;
 
