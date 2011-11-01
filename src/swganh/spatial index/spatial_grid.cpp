@@ -65,6 +65,30 @@ uint32_t Spatialgrid::AddContent(std::shared_ptr<swganh::object::Object>& object
 
     object->SetBucketId(finalBucket);
 
+	BucketMap_t::iterator mapIt = ZMapCells.find(finalBucket);
+
+	switch(object->GetType())
+    {
+		
+	case 0x504c4159: //player I know this is evil
+    {
+		(*mapIt).second->AddContent(object,Bucket_Players);
+    }
+    break;
+
+    case 0x4352454F://creatures
+    {
+        (*mapIt).second->AddContent(object,Bucket_Creatures);
+    }
+    break;
+
+    default: //all static Objects
+    {
+        (*mapIt).second->AddContent(object,Bucket_Objects);
+    }
+    break;
+    }
+
     return finalBucket;
 }
 
@@ -79,8 +103,6 @@ void Spatialgrid::RemoveContent(std::shared_ptr<swganh::object::Object>& object)
     }
 
 	DLOG(INFO) << "Spatialgrid::RemoveContent :: " << object->GetObjectId() << " Bucket " << cellId;
-
-    ObjectListType *list;
 
     std::map<uint32_t, Bucket*>::iterator it = ZMapCells.find(cellId);
 
@@ -128,6 +150,66 @@ void Spatialgrid::RemoveContent(std::shared_ptr<swganh::object::Object>& object)
     }
 	*/
 }
+
+void Spatialgrid::UpdateObject(std::shared_ptr<swganh::object::Object>& object)
+{
+    glm::vec3   position;
+
+    //cater for players in cells
+	std::shared_ptr<swganh::object::Object> parent = object->GetContainer();
+    if (parent != nullptr)	{
+        position = object->GetWorldPosition();
+    }
+    else	{
+        position = object->GetPosition();
+    }
+
+    uint32_t	newBucket	= getCellId(position.x, position.z);
+    uint32_t	oldBucket	= object->GetBucketId();
+
+	if(!GetCellValidFlag(newBucket))    {
+        //something fishy here
+        assert(false && "Spatialgrid::AddContent :: couldnt find fitting bucket :(");
+    }
+
+    //no need for an update
+    if(newBucket == oldBucket)	{
+		DLOG(INFO) << "Spatialgrid::UpdateObject :: the new Bucket ID " << newBucket << " is the same as the old one";
+        return;
+    }
+
+	std::map<uint32_t, Bucket*>::iterator old_it = ZMapCells.find(oldBucket);
+	std::map<uint32_t, Bucket*>::iterator new_it = ZMapCells.find(oldBucket);
+
+    switch(object->GetType())    {
+		
+	//players
+	case 0x504c4159:   {
+		(*old_it).second->RemovePlayer(object->GetObjectId());
+		(*new_it).second->AddPlayer(object);
+    }
+    break;
+
+	//creatures
+    case 0x4352454F:    {
+        (*old_it).second->RemoveContent(object->GetObjectId(),Bucket_Creatures);
+		(*new_it).second->AddContent(object,Bucket_Creatures);
+    }
+    break;
+
+	//all static Objects
+    default:    {
+        (*old_it).second->RemoveContent(object->GetObjectId(),Bucket_Objects);
+		(*new_it).second->AddContent(object,Bucket_Creatures);
+    }
+    break;
+    }
+
+    //put into new bucket
+    object->SetBucketId(newBucket);
+
+}
+
 
 bool Spatialgrid::GetCellValidFlag(uint32_t bucket)
 {

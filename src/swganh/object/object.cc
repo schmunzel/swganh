@@ -364,6 +364,44 @@ void Object::SetSceneId(uint32_t scene_id)
 {
 	scene_id_ = scene_id;
 }
+
+Object* Object::GetRootParent() 
+{
+    // If there's no parent id then this is the root object.
+    if (GetContainer() == nullptr)    {
+        return this;
+    }
+
+	std::shared_ptr<swganh::object::Object> parent = this->GetContainer();
+    return parent->GetRootParent();
+}
+
+glm::vec3 Object::GetWorldPosition() 
+{
+    Object* root_parent = GetRootParent();
+	glm::vec3 position = this->GetPosition();
+	glm::vec3 root_position = root_parent->GetPosition();
+
+    // Is this object the root? If so it's position is the world position.
+    if (this == root_parent) {
+        return position;
+    }
+
+    // Get the length of the object's vector inside the root parent (generally a building).
+    float length = glm::length(position);
+
+    // Determine the translation angle.
+	const glm::quat root_orientation = root_parent->GetOrientation();
+    float theta = glm::angle(root_orientation) - glm::atan(position.x, position.z);
+
+    // Calculate and return the object's position relative to root parent's position in the world.
+    return glm::vec3(
+               root_position.x + (sin(theta) * length),
+               root_position.y + position.y,
+               root_position.z - (cos(theta) * length)
+           );
+}
+
 optional<BaselinesMessage> Object::GetBaseline3()
 {
 	return move(ObjectMessageBuilder::BuildBaseline3(this));

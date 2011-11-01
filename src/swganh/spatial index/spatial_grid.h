@@ -33,6 +33,8 @@ namespace spatialgrid {
 #define VIEWRANGE 3
 #define CHATRANGE 1
 
+	typedef std::map<uint32_t, spatialbucket::Bucket*> BucketMap_t;
+
 	class Spatialgrid {
 public:
 	// Contructor & Destructor
@@ -62,12 +64,15 @@ public:
 	/* Checks whether a given Bucket exists
 	*
 	*/
-	bool				GetCellValidFlag(uint32_t bucket);
+	bool					GetCellValidFlag(uint32_t bucket);
 	
-	/*
-	// Update the object in the zmap
-	void				UpdateObject(Object* updateObject);
+	
+	/* Updates a given Objects bucket
+	*
+	*/
+	void					UpdateObject(std::shared_ptr<swganh::object::Object>& object);
 
+	/*
 	//bool		checkPlayersNearby(Object* updateObject);
 
 	
@@ -133,7 +138,7 @@ private:
 	
 	//std::map<uint32_t, spatialbucket::ObjectListType>		MapHandler;
 	
-	std::map<uint32_t, spatialbucket::Bucket*>		ZMapCells;
+	BucketMap_t		ZMapCells;
 
 	uint32_t		zmap_lookup[GRIDWIDTH+1][GRIDHEIGHT+1]; // one extra for protection
 		

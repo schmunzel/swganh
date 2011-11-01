@@ -28,6 +28,8 @@ public:
     {
 		InsertObject(object);
 
+		//TODO insert SI
+
         for_each(begin(object_map_), end(object_map_),
             [&object] (const ObjectMap::value_type& object_entry) 
         {

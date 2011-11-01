@@ -28,6 +28,8 @@ void MovementManager::HandleDataTransform(
     DataTransform transform;
     transform.Deserialize(message.data);
     
+	//TODO: contact SI
+
     auto object = controller->GetObject();
     
     object->SetPosition(transform.position);

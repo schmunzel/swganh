@@ -189,7 +189,7 @@ public:
     void SetTemplate(const std::string& template_string){ template_string_ =  template_string; }
     glm::vec3 GetPosition() { return position_; }
     void SetPosition(glm::vec3 position);
-    glm::quat GetOrientation() { return orientation_; }
+    glm::quat GetOrientation() { return orientation_; } 
 
     void SetOrientation(glm::quat orientation);
 
@@ -198,6 +198,9 @@ public:
      */
     uint8_t GetHeading() const;
 
+	/**returns the Objects parent
+     * @return is the shared pointer to the objects parent object
+     */
     const std::shared_ptr<Object>& GetContainer() const { return container_; }
     void SetContainer(const std::shared_ptr<Object>& container);
 
@@ -242,6 +245,20 @@ public:
      * @return The id of this Object instance.
      */
     uint64_t GetObjectId() const;
+
+	/**
+	 * Iterate through the Container(s) that hold us and return the last container in that line
+	 * which is set directly in the Main Cell
+     * @return The Container that holds us that is set in the world
+     */ 
+	Object* GetRootParent();
+
+	/**
+	 * returns our position in the world independent of the container we are in
+	 * this is especially important when in a cell
+     * @return The location of us in the game world
+     */ 
+	glm::vec3	GetWorldPosition();
     
     std::wstring GetCustomName() const;
     
